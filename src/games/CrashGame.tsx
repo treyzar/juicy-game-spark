@@ -58,6 +58,7 @@ const CrashGame = () => {
 
       if (m >= crashPoint) {
         setMultiplier(crashPoint);
+        sfxCrash();
         setPhase('crashed');
         setShakeIntensity(10);
         setTimeout(() => setShakeIntensity(0), 300);
