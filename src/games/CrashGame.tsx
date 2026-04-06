@@ -35,6 +35,7 @@ const CrashGame = () => {
 
   const cashOut = useCallback(() => {
     if (phase !== 'flying') return;
+    sfxCashOut();
     const winnings = Math.floor(bet * multiplier);
     addCoins(winnings);
     setRecord('crash', Math.round(multiplier * 100));
