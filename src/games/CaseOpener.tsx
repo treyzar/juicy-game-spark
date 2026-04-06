@@ -62,15 +62,20 @@ const CaseOpener = () => {
     setShowConfetti(false);
 
     const reel = generateReel();
-    // Choose winner at position 35
     const winnerIdx = 35;
     setReelItems(reel);
     setSpinning(true);
+    sfxClick();
+
+    // Play ticks during spin
+    const tickInterval = setInterval(() => sfxTick(), 120);
 
     await controls.start({
       x: -(winnerIdx * 110 - 150),
       transition: { duration: 3, ease: [0.15, 0.85, 0.35, 1.02] },
     });
+
+    clearInterval(tickInterval);
 
     const won = reel[winnerIdx];
     setWonItem(won);
@@ -78,8 +83,11 @@ const CaseOpener = () => {
     setSpinning(false);
 
     if (won.rarity === 'epic' || won.rarity === 'legendary') {
+      sfxWin();
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2000);
+    } else {
+      sfxCollect();
     }
   };
 
