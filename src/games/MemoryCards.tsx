@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxFlip, sfxMatch, sfxWrong, sfxWin } from '@/lib/sounds';
 
 const GRADIENTS = [
   'linear-gradient(135deg, #a855f7, #ec4899)',
@@ -44,6 +45,7 @@ const MemoryCards = () => {
 
   const handleFlip = (idx: number) => {
     if (locked || cards[idx].flipped || cards[idx].matched) return;
+    sfxFlip();
 
     const newCards = [...cards];
     newCards[idx].flipped = true;
@@ -58,6 +60,7 @@ const MemoryCards = () => {
 
       const [a, b] = newSelected;
       if (newCards[a].gradientIdx === newCards[b].gradientIdx) {
+        sfxMatch();
         newCards[a].matched = true;
         newCards[b].matched = true;
         setCards([...newCards]);
@@ -65,9 +68,11 @@ const MemoryCards = () => {
         setLocked(false);
 
         if (newCards.every(c => c.matched)) {
+          sfxWin();
           setRecord('memory', Math.max(1, 100 - moves));
         }
       } else {
+        sfxWrong();
         setTimeout(() => {
           newCards[a].flipped = false;
           newCards[b].flipped = false;

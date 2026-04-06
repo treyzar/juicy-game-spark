@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxCollect, sfxWrong, sfxWin, sfxCountdown } from '@/lib/sounds';
 
 const COLORS = [
   { name: 'RED', hsl: 'hsl(0 80% 55%)' },
@@ -67,6 +68,7 @@ const ColorMatch = () => {
 
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && score > 0) {
+      sfxWin();
       setRecord('colormatch', score);
     }
   }, [gameActive, timeLeft, score, setRecord]);
@@ -75,9 +77,11 @@ const ColorMatch = () => {
     if (!gameActive) return;
     if (color.name === textColor.name) {
       setScore(s => s + 1);
+      sfxCollect();
       setFeedback('correct');
     } else {
       setScore(s => Math.max(0, s - 1));
+      sfxWrong();
       setFeedback('wrong');
     }
     setTimeout(() => setFeedback(null), 300);

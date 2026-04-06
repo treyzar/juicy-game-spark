@@ -3,6 +3,7 @@ import { motion, useAnimation } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore, InventoryItem } from '@/stores/useGameStore';
 import { Package, ArrowUp, Sparkles } from 'lucide-react';
+import { sfxClick, sfxWin, sfxUpgrade, sfxCrash, sfxTick, sfxCollect } from '@/lib/sounds';
 
 const ITEMS: Omit<InventoryItem, 'id'>[] = [
   { name: 'Common Shard', rarity: 'common', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', value: 10 },
@@ -61,15 +62,20 @@ const CaseOpener = () => {
     setShowConfetti(false);
 
     const reel = generateReel();
-    // Choose winner at position 35
     const winnerIdx = 35;
     setReelItems(reel);
     setSpinning(true);
+    sfxClick();
+
+    // Play ticks during spin
+    const tickInterval = setInterval(() => sfxTick(), 120);
 
     await controls.start({
       x: -(winnerIdx * 110 - 150),
       transition: { duration: 3, ease: [0.15, 0.85, 0.35, 1.02] },
     });
+
+    clearInterval(tickInterval);
 
     const won = reel[winnerIdx];
     setWonItem(won);
@@ -77,8 +83,11 @@ const CaseOpener = () => {
     setSpinning(false);
 
     if (won.rarity === 'epic' || won.rarity === 'legendary') {
+      sfxWin();
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2000);
+    } else {
+      sfxCollect();
     }
   };
 
@@ -93,17 +102,18 @@ const CaseOpener = () => {
     setTimeout(() => {
       if (Math.random() * 100 < chance) {
         removeItem(upgradeItem.id);
-        // Give next rarity item
         const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
         const nextR = rarities[Math.min(rarities.indexOf(upgradeItem.rarity) + 1, rarities.length - 1)];
         const candidates = ITEMS.filter(i => i.rarity === nextR);
         const won = candidates[Math.floor(Math.random() * candidates.length)];
         addItem({ ...won, id: crypto.randomUUID() });
+        sfxUpgrade();
         setUpgradeResult('success');
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 2000);
       } else {
         removeItem(upgradeItem.id);
+        sfxCrash();
         setUpgradeResult('fail');
       }
       setUpgradeItem(null);

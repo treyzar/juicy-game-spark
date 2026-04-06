@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxCollect, sfxCrash } from '@/lib/sounds';
 
 /** Направление змейки */
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -89,6 +90,7 @@ const NeonSnake = () => {
       if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
           snake.some((s) => s.x === head.x && s.y === head.y)) {
         setRecord('snake', scoreRef.current);
+        sfxCrash();
         setGameOver(true);
         return;
       }
@@ -98,6 +100,7 @@ const NeonSnake = () => {
       if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
         scoreRef.current++;
         setScore(scoreRef.current);
+        sfxCollect();
         spawnFood(cols, rows);
       } else {
         snake.pop();

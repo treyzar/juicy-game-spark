@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { sfxTradeOpen, sfxProfit, sfxLoss, sfxWin } from '@/lib/sounds';
 
 interface FloatingPnl {
   id: number;
@@ -80,6 +81,7 @@ const TurboTrader = () => {
   // Save record on end
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && totalPnl !== 0) {
+      sfxWin();
       setRecord('trader', Math.max(0, totalPnl + 1000));
     }
   }, [gameActive, timeLeft]);
@@ -146,6 +148,7 @@ const TurboTrader = () => {
 
   const openPosition = (dir: 'long' | 'short') => {
     if (!gameActive || position) return;
+    sfxTradeOpen();
     setPosition(dir);
     setEntryPrice(currentPrice);
     setPnl(0);
@@ -153,6 +156,7 @@ const TurboTrader = () => {
 
   const closePosition = () => {
     if (!position) return;
+    if (pnl > 0) { sfxProfit(); } else { sfxLoss(); }
     setTotalPnl(t => t + pnl);
     setBalance(b => b + pnl);
     setTrades(t => t + 1);

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { Rocket } from 'lucide-react';
+import { sfxCrash, sfxCashOut, sfxHeartbeat, sfxClick } from '@/lib/sounds';
 
 /** CRASH: To the Moon — игра на множитель */
 const CrashGame = () => {
@@ -24,6 +25,7 @@ const CrashGame = () => {
 
   const startRound = useCallback(() => {
     if (!spendCoins(bet)) return;
+    sfxClick();
     setCrashPoint(generateCrashPoint());
     setMultiplier(1.0);
     setPhase('flying');
@@ -33,6 +35,7 @@ const CrashGame = () => {
 
   const cashOut = useCallback(() => {
     if (phase !== 'flying') return;
+    sfxCashOut();
     const winnings = Math.floor(bet * multiplier);
     addCoins(winnings);
     setRecord('crash', Math.round(multiplier * 100));
@@ -55,6 +58,7 @@ const CrashGame = () => {
 
       if (m >= crashPoint) {
         setMultiplier(crashPoint);
+        sfxCrash();
         setPhase('crashed');
         setShakeIntensity(10);
         setTimeout(() => setShakeIntensity(0), 300);
@@ -63,6 +67,9 @@ const CrashGame = () => {
 
       setMultiplier(m);
       setShakeIntensity(Math.min(5, (m - 1) * 2));
+
+      // Heartbeat at high multipliers
+      if (m > 3 && Math.random() < 0.02) sfxHeartbeat();
 
       // Spawn rocket particles
       if (Math.random() > 0.5) {
