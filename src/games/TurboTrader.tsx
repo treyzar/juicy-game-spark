@@ -147,6 +147,7 @@ const TurboTrader = () => {
 
   const openPosition = (dir: 'long' | 'short') => {
     if (!gameActive || position) return;
+    sfxTradeOpen();
     setPosition(dir);
     setEntryPrice(currentPrice);
     setPnl(0);
