@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxCollect, sfxCrash } from '@/lib/sounds';
 
 /** Направление змейки */
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
