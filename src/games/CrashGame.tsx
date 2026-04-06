@@ -25,6 +25,7 @@ const CrashGame = () => {
 
   const startRound = useCallback(() => {
     if (!spendCoins(bet)) return;
+    sfxClick();
     setCrashPoint(generateCrashPoint());
     setMultiplier(1.0);
     setPhase('flying');
