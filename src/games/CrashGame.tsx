@@ -68,6 +68,9 @@ const CrashGame = () => {
       setMultiplier(m);
       setShakeIntensity(Math.min(5, (m - 1) * 2));
 
+      // Heartbeat at high multipliers
+      if (m > 3 && Math.random() < 0.02) sfxHeartbeat();
+
       // Spawn rocket particles
       if (Math.random() > 0.5) {
         setParticles(p => [

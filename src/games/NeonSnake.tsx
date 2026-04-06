@@ -90,6 +90,7 @@ const NeonSnake = () => {
       if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
           snake.some((s) => s.x === head.x && s.y === head.y)) {
         setRecord('snake', scoreRef.current);
+        sfxCrash();
         setGameOver(true);
         return;
       }

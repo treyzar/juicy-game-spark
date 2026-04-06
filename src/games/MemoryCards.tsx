@@ -60,6 +60,7 @@ const MemoryCards = () => {
 
       const [a, b] = newSelected;
       if (newCards[a].gradientIdx === newCards[b].gradientIdx) {
+        sfxMatch();
         newCards[a].matched = true;
         newCards[b].matched = true;
         setCards([...newCards]);
@@ -67,9 +68,11 @@ const MemoryCards = () => {
         setLocked(false);
 
         if (newCards.every(c => c.matched)) {
+          sfxWin();
           setRecord('memory', Math.max(1, 100 - moves));
         }
       } else {
+        sfxWrong();
         setTimeout(() => {
           newCards[a].flipped = false;
           newCards[b].flipped = false;

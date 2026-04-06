@@ -68,6 +68,7 @@ const ColorMatch = () => {
 
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && score > 0) {
+      sfxWin();
       setRecord('colormatch', score);
     }
   }, [gameActive, timeLeft, score, setRecord]);

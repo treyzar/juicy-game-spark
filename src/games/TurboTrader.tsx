@@ -81,6 +81,7 @@ const TurboTrader = () => {
   // Save record on end
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && totalPnl !== 0) {
+      sfxWin();
       setRecord('trader', Math.max(0, totalPnl + 1000));
     }
   }, [gameActive, timeLeft]);

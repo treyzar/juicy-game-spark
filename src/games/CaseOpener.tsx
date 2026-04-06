@@ -102,17 +102,18 @@ const CaseOpener = () => {
     setTimeout(() => {
       if (Math.random() * 100 < chance) {
         removeItem(upgradeItem.id);
-        // Give next rarity item
         const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
         const nextR = rarities[Math.min(rarities.indexOf(upgradeItem.rarity) + 1, rarities.length - 1)];
         const candidates = ITEMS.filter(i => i.rarity === nextR);
         const won = candidates[Math.floor(Math.random() * candidates.length)];
         addItem({ ...won, id: crypto.randomUUID() });
+        sfxUpgrade();
         setUpgradeResult('success');
         setShowConfetti(true);
         setTimeout(() => setShowConfetti(false), 2000);
       } else {
         removeItem(upgradeItem.id);
+        sfxCrash();
         setUpgradeResult('fail');
       }
       setUpgradeItem(null);
