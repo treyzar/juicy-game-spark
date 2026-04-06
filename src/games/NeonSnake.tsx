@@ -99,6 +99,7 @@ const NeonSnake = () => {
       if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
         scoreRef.current++;
         setScore(scoreRef.current);
+        sfxCollect();
         spawnFood(cols, rows);
       } else {
         snake.pop();
