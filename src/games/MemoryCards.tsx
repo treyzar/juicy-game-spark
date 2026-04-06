@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxFlip, sfxMatch, sfxWrong, sfxWin } from '@/lib/sounds';
 
 const GRADIENTS = [
   'linear-gradient(135deg, #a855f7, #ec4899)',
