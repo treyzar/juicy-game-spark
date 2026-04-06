@@ -3,6 +3,7 @@ import { motion, useAnimation } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore, InventoryItem } from '@/stores/useGameStore';
 import { Package, ArrowUp, Sparkles } from 'lucide-react';
+import { sfxClick, sfxWin, sfxUpgrade, sfxCrash, sfxTick } from '@/lib/sounds';
 
 const ITEMS: Omit<InventoryItem, 'id'>[] = [
   { name: 'Common Shard', rarity: 'common', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', value: 10 },
