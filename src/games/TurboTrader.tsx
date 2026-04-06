@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { sfxTradeOpen, sfxProfit, sfxLoss, sfxWin } from '@/lib/sounds';
 
 interface FloatingPnl {
   id: number;
