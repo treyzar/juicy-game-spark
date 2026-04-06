@@ -155,6 +155,7 @@ const TurboTrader = () => {
 
   const closePosition = () => {
     if (!position) return;
+    if (pnl > 0) { sfxProfit(); } else { sfxLoss(); }
     setTotalPnl(t => t + pnl);
     setBalance(b => b + pnl);
     setTrades(t => t + 1);
