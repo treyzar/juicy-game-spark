@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { Rocket } from 'lucide-react';
+import { sfxCrash, sfxCashOut, sfxHeartbeat, sfxClick } from '@/lib/sounds';
 
 /** CRASH: To the Moon — игра на множитель */
 const CrashGame = () => {
