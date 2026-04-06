@@ -45,6 +45,7 @@ const MemoryCards = () => {
 
   const handleFlip = (idx: number) => {
     if (locked || cards[idx].flipped || cards[idx].matched) return;
+    sfxFlip();
 
     const newCards = [...cards];
     newCards[idx].flipped = true;
