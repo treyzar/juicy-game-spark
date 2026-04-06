@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
+import { sfxCollect, sfxWrong, sfxWin, sfxCountdown } from '@/lib/sounds';
 
 const COLORS = [
   { name: 'RED', hsl: 'hsl(0 80% 55%)' },
