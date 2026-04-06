@@ -76,9 +76,11 @@ const ColorMatch = () => {
     if (!gameActive) return;
     if (color.name === textColor.name) {
       setScore(s => s + 1);
+      sfxCollect();
       setFeedback('correct');
     } else {
       setScore(s => Math.max(0, s - 1));
+      sfxWrong();
       setFeedback('wrong');
     }
     setTimeout(() => setFeedback(null), 300);
