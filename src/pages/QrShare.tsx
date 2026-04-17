@@ -5,7 +5,7 @@ import { ArrowLeft, Copy, ExternalLink, QrCode } from "lucide-react";
 const QrShare = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const SHARE_URL = "https://agent-69e1e7c67badbd7--frabjous-bombolone-27cb21.netlify.app/";
+  const SHARE_URL = "https://juicy-game-spark.vercel.app/";
 
   const gameUrl = useMemo(() => SHARE_URL, []);
   const qrSrc = useMemo(
