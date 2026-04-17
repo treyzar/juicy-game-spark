@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Settings2, Trophy } from 'lucide-react';
@@ -26,7 +26,11 @@ export const GameContainer = ({
   profileLabel,
 }: GameContainerProps) => {
   const navigate = useNavigate();
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(Boolean(settingsContent));
+
+  useEffect(() => {
+    setShowSettings(Boolean(settingsContent));
+  }, [settingsContent]);
 
   return (
     <motion.div
@@ -81,6 +85,9 @@ export const GameContainer = ({
       </div>
       {settingsContent && showSettings && (
         <div className="glass-strong p-3 md:p-4 mb-4 rounded-xl">
+          <p className="text-xs font-mono text-muted-foreground mb-3">
+            Настрой игру под себя перед стартом
+          </p>
           {settingsContent}
         </div>
       )}
