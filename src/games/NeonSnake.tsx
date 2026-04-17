@@ -156,9 +156,18 @@ const NeonSnake = () => {
         ctx.shadowColor = `hsl(${270 + i * 3} 100% 65%)`;
         ctx.shadowBlur = 15 * t;
         ctx.fillStyle = `hsl(${270 + i * 3} 100% ${50 + t * 20}%)`;
-        ctx.beginPath();
-        ctx.roundRect(seg.x * GRID + 1, seg.y * GRID + 1, GRID - 2, GRID - 2, 4);
-        ctx.fill();
+        const x = seg.x * GRID + 1;
+        const y = seg.y * GRID + 1;
+        const size = GRID - 2;
+
+        // Fallback for browsers without CanvasRenderingContext2D.roundRect
+        if (typeof (ctx as CanvasRenderingContext2D & { roundRect?: unknown }).roundRect === 'function') {
+          ctx.beginPath();
+          ctx.roundRect(x, y, size, size, 4);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, size, size);
+        }
       });
       ctx.shadowBlur = 0;
 

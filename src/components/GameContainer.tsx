@@ -26,18 +26,21 @@ export const GameContainer = ({
   profileLabel,
 }: GameContainerProps) => {
   const navigate = useNavigate();
-  const [showSettings, setShowSettings] = useState(Boolean(settingsContent));
-  const [isConfigured, setIsConfigured] = useState(!settingsContent);
+  const hasSettings = Boolean(settingsContent);
+  const [showSettings, setShowSettings] = useState(hasSettings);
+  const [isConfigured, setIsConfigured] = useState(!hasSettings);
 
   useEffect(() => {
-    setShowSettings(Boolean(settingsContent));
-    setIsConfigured(!settingsContent);
-  }, [settingsContent]);
+    setShowSettings(hasSettings);
+    setIsConfigured(!hasSettings);
+  }, [hasSettings]);
 
   const handleStart = () => {
-    onRestart();
     setIsConfigured(true);
     setShowSettings(false);
+    window.requestAnimationFrame(() => {
+      onRestart();
+    });
   };
 
   return (
