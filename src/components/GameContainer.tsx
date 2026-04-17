@@ -27,10 +27,18 @@ export const GameContainer = ({
 }: GameContainerProps) => {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(Boolean(settingsContent));
+  const [isConfigured, setIsConfigured] = useState(!settingsContent);
 
   useEffect(() => {
     setShowSettings(Boolean(settingsContent));
+    setIsConfigured(!settingsContent);
   }, [settingsContent]);
+
+  const handleStart = () => {
+    onRestart();
+    setIsConfigured(true);
+    setShowSettings(false);
+  };
 
   return (
     <motion.div
@@ -62,6 +70,7 @@ export const GameContainer = ({
               onClick={() => setShowSettings((v) => !v)}
               className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
               title="Настройки"
+              disabled={!isConfigured}
             >
               <Settings2 className="w-5 h-5" />
             </button>
@@ -78,6 +87,7 @@ export const GameContainer = ({
           <button
             onClick={onRestart}
             className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+            disabled={!isConfigured}
           >
             <RotateCcw className="w-5 h-5" />
           </button>
@@ -94,8 +104,34 @@ export const GameContainer = ({
 
       {/* Game Area */}
       <div className="flex-1 glass rounded-xl overflow-hidden flex items-center justify-center">
-        {children}
+        {isConfigured ? (
+          children
+        ) : (
+          <div className="text-center p-6">
+            <p className="font-mono text-sm text-muted-foreground">Сначала настрой игру и нажми «Играть»</p>
+          </div>
+        )}
       </div>
+
+      {settingsContent && !isConfigured && (
+        <div className="fixed inset-0 z-50 bg-background/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-xl glass-strong rounded-2xl p-4 md:p-6">
+            <h2 className="text-xl font-bold font-mono mb-2">Перед стартом</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Настрой игру под себя, затем нажми «Играть».
+            </p>
+            <div className="mb-4">
+              {settingsContent}
+            </div>
+            <button
+              onClick={handleStart}
+              className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold"
+            >
+              Играть
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
