@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { sfxCollect, sfxWrong, sfxWin, sfxCountdown } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
 
 const COLORS = [
   { name: 'КРАСНЫЙ', hsl: 'hsl(0 80% 55%)' },
@@ -15,6 +16,7 @@ const COLORS = [
 
 /** Color Match — Stroop-эффект, игра на реакцию */
 const ColorMatch = () => {
+  const GAME_ID = 'colormatch';
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [textColor, setTextColor] = useState(COLORS[0]);
@@ -23,7 +25,11 @@ const ColorMatch = () => {
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [gameActive, setGameActive] = useState(false);
   const timerRef = useRef<number>(0);
-  const { records, setRecord } = useGameStore();
+  const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
+  const roundTime = Number(gameSettings[GAME_ID]?.roundTime ?? 30);
+  const optionsCount = Number(gameSettings[GAME_ID]?.optionsCount ?? 3);
+  const profileId = buildProfileId({ roundTime, optionsCount });
+  const profileRecord = getRecord(GAME_ID, profileId);
 
   const generateRound = useCallback(() => {
     const shuffled = [...COLORS].sort(() => Math.random() - 0.5);
@@ -39,17 +45,17 @@ const ColorMatch = () => {
     // Options: include the correct answer (the COLOR the text is displayed in)
     const opts = [correctColor];
     const remaining = COLORS.filter(c => c.name !== correctColor.name).sort(() => Math.random() - 0.5);
-    opts.push(remaining[0], remaining[1]);
+    opts.push(...remaining.slice(0, Math.max(1, optionsCount - 1)));
     setOptions(opts.sort(() => Math.random() - 0.5));
-  }, []);
+  }, [optionsCount]);
 
   const startGame = useCallback(() => {
     setScore(0);
-    setTimeLeft(30);
+    setTimeLeft(roundTime);
     setGameActive(true);
     setFeedback(null);
     generateRound();
-  }, [generateRound]);
+  }, [generateRound, roundTime]);
 
   useEffect(() => {
     if (!gameActive) return;
@@ -69,9 +75,23 @@ const ColorMatch = () => {
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && score > 0) {
       sfxWin();
-      setRecord('colormatch', score);
+      setRecord(GAME_ID, profileId, score);
     }
-  }, [gameActive, timeLeft, score, setRecord]);
+  }, [GAME_ID, gameActive, profileId, score, setRecord, timeLeft]);
+
+  useEffect(() => {
+    if (!gameActive) {
+      setTimeLeft(roundTime);
+    }
+  }, [gameActive, roundTime]);
+
+  const applySetting = (patch: { roundTime?: number; optionsCount?: number }) => {
+    setGameSettings(GAME_ID, patch);
+    setGameActive(false);
+    setTimeLeft(Number(patch.roundTime ?? roundTime));
+    setScore(0);
+    setFeedback(null);
+  };
 
   const handleChoice = (color: typeof COLORS[0]) => {
     if (!gameActive) return;
@@ -92,11 +112,48 @@ const ColorMatch = () => {
     <GameContainer
       title="COLOR MATCH"
       score={score}
-      highScore={records.colormatch?.score}
+      highScore={profileRecord?.score}
       onRestart={startGame}
+      profileLabel={`Профиль: ${roundTime}s / ${optionsCount} варианта`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Длительность раунда</p>
+            <div className="flex gap-2">
+              {[30, 45, 60].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => applySetting({ roundTime: value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    roundTime === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {value}s
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Количество вариантов</p>
+            <div className="flex gap-2">
+              {[3, 4].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => applySetting({ optionsCount: value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    optionsCount === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     >
       <div className="flex flex-col items-center justify-center gap-8 p-6 w-full max-w-md mx-auto">
-        {!gameActive && timeLeft === 30 ? (
+        {!gameActive && timeLeft === roundTime ? (
           <div className="text-center animate-fade-in">
             <p className="text-2xl font-bold mb-2">Выбери ЦВЕТ текста</p>
             <p className="text-muted-foreground mb-6">Не читай слово — смотри на цвет!</p>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { sfxFlip, sfxMatch, sfxWrong, sfxWin } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
 
 const GRADIENTS = [
   'linear-gradient(135deg, #a855f7, #ec4899)',
@@ -24,12 +25,21 @@ interface Card {
 
 /** Memory Cards — 16 карточек с градиентами и flip-эффектом */
 const MemoryCards = () => {
+  const GAME_ID = 'memory';
   const [cards, setCards] = useState<Card[]>([]);
   const [moves, setMoves] = useState(0);
   const [selected, setSelected] = useState<number[]>([]);
   const [locked, setLocked] = useState(false);
-  const [gridSize, setGridSize] = useState(4);
-  const { records, setRecord } = useGameStore();
+  const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
+  const [gridSize, setGridSize] = useState(Number(gameSettings[GAME_ID]?.gridSize ?? 4));
+  const flipBackDelayMs = Number(gameSettings[GAME_ID]?.flipBackDelayMs ?? 800);
+  const profileId = buildProfileId({ gridSize, flipBackDelayMs });
+  const profileRecord = getRecord(GAME_ID, profileId);
+
+  useEffect(() => {
+    const persisted = Number(gameSettings[GAME_ID]?.gridSize ?? 4);
+    if (persisted !== gridSize) setGridSize(persisted);
+  }, [GAME_ID, gameSettings, gridSize]);
 
   const initGame = useCallback(() => {
     const pairCount = (gridSize * gridSize) / 2;
@@ -69,7 +79,7 @@ const MemoryCards = () => {
 
         if (newCards.every(c => c.matched)) {
           sfxWin();
-          setRecord('memory', Math.max(1, 100 - moves));
+          setRecord(GAME_ID, profileId, Math.max(1, 100 - moves));
         }
       } else {
         sfxWrong();
@@ -79,7 +89,7 @@ const MemoryCards = () => {
           setCards([...newCards]);
           setSelected([]);
           setLocked(false);
-        }, 800);
+        }, flipBackDelayMs);
       }
     }
   };
@@ -90,8 +100,52 @@ const MemoryCards = () => {
     <GameContainer
       title="MEMORY CARDS"
       score={moves}
-      highScore={records.memory?.score}
+      highScore={profileRecord?.score}
       onRestart={initGame}
+      profileLabel={`Профиль: ${gridSize}x${gridSize} / ${flipBackDelayMs}ms`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Размер поля</p>
+            <div className="flex gap-2">
+              {[2, 4, 6].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => {
+                    setGridSize(size);
+                    setGameSettings(GAME_ID, { gridSize: size });
+                    setCards([]);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    gridSize === size ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {size}x{size}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Пауза после ошибки</p>
+            <div className="flex gap-2">
+              {[600, 800, 1000].map((delay) => (
+                <button
+                  key={delay}
+                  onClick={() => {
+                    setGameSettings(GAME_ID, { flipBackDelayMs: delay });
+                    setCards([]);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    flipBackDelayMs === delay ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {delay}ms
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     >
       <div className="p-4 md:p-6 w-full max-w-lg mx-auto">
         {cards.length === 0 ? (
@@ -101,7 +155,10 @@ const MemoryCards = () => {
               {[2, 4, 6].map(size => (
                 <button
                   key={size}
-                  onClick={() => setGridSize(size)}
+                  onClick={() => {
+                    setGridSize(size);
+                    setGameSettings(GAME_ID, { gridSize: size });
+                  }}
                   className={`px-4 py-2 rounded-lg font-mono text-sm transition-all ${
                     gridSize === size ? 'btn-neon text-primary-foreground' : 'bg-muted/50 hover:bg-muted'
                   }`}

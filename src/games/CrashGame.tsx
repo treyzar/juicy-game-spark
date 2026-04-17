@@ -4,9 +4,17 @@ import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { Rocket } from 'lucide-react';
 import { sfxCrash, sfxCashOut, sfxHeartbeat, sfxClick } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
+
+const RISK_CONFIG = {
+  safe: { crashFactor: 1.05, growth: 0.38 },
+  normal: { crashFactor: 0.97, growth: 0.5 },
+  insane: { crashFactor: 0.9, growth: 0.62 },
+} as const;
 
 /** CRASH: To the Moon — игра на множитель */
 const CrashGame = () => {
+  const GAME_ID = 'crash';
   const [multiplier, setMultiplier] = useState(1.0);
   const [phase, setPhase] = useState<'betting' | 'flying' | 'crashed' | 'cashed'>('betting');
   const [bet, setBet] = useState(100);
@@ -15,32 +23,36 @@ const CrashGame = () => {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([]);
   const rafRef = useRef<number>(0);
   const startRef = useRef(0);
-  const { records, setRecord, coins, addCoins, spendCoins } = useGameStore();
+  const { gameSettings, getRecord, setRecord, setGameSettings, coins, addCoins, spendCoins } = useGameStore();
+  const riskMode = (gameSettings[GAME_ID]?.riskMode as keyof typeof RISK_CONFIG) ?? 'normal';
+  const autoCashoutEnabled = Boolean(gameSettings[GAME_ID]?.autoCashoutEnabled ?? false);
+  const autoCashoutX = Number(gameSettings[GAME_ID]?.autoCashoutX ?? 2);
+  const profileId = buildProfileId({ riskMode, autoCashoutEnabled, autoCashoutX });
+  const profileRecord = getRecord(GAME_ID, profileId);
 
-  const generateCrashPoint = () => {
-    // House edge ~3%: crash = 0.97 / (1 - random())
+  const generateCrashPoint = (risk: keyof typeof RISK_CONFIG) => {
     const r = Math.random();
-    return Math.max(1.01, 0.97 / (1 - r));
+    return Math.max(1.01, RISK_CONFIG[risk].crashFactor / (1 - r));
   };
 
   const startRound = useCallback(() => {
     if (!spendCoins(bet)) return;
     sfxClick();
-    setCrashPoint(generateCrashPoint());
+    setCrashPoint(generateCrashPoint(riskMode));
     setMultiplier(1.0);
     setPhase('flying');
     setShakeIntensity(0);
     startRef.current = performance.now();
-  }, [bet, spendCoins]);
+  }, [bet, riskMode, spendCoins]);
 
   const cashOut = useCallback(() => {
     if (phase !== 'flying') return;
     sfxCashOut();
     const winnings = Math.floor(bet * multiplier);
     addCoins(winnings);
-    setRecord('crash', Math.round(multiplier * 100));
+    setRecord(GAME_ID, profileId, Math.round(multiplier * 100));
     setPhase('cashed');
-  }, [phase, bet, multiplier, addCoins, setRecord]);
+  }, [GAME_ID, phase, bet, multiplier, addCoins, profileId, setRecord]);
 
   const restart = useCallback(() => {
     setPhase('betting');
@@ -54,7 +66,7 @@ const CrashGame = () => {
 
     const tick = () => {
       const elapsed = (performance.now() - startRef.current) / 1000;
-      const m = Math.pow(Math.E, elapsed * 0.5); // exponential growth
+      const m = Math.pow(Math.E, elapsed * RISK_CONFIG[riskMode].growth);
 
       if (m >= crashPoint) {
         setMultiplier(crashPoint);
@@ -62,6 +74,16 @@ const CrashGame = () => {
         setPhase('crashed');
         setShakeIntensity(10);
         setTimeout(() => setShakeIntensity(0), 300);
+        return;
+      }
+
+      if (autoCashoutEnabled && m >= autoCashoutX) {
+        const cashoutAt = autoCashoutX;
+        setMultiplier(cashoutAt);
+        sfxCashOut();
+        addCoins(Math.floor(bet * cashoutAt));
+        setRecord(GAME_ID, profileId, Math.round(cashoutAt * 100));
+        setPhase('cashed');
         return;
       }
 
@@ -84,7 +106,12 @@ const CrashGame = () => {
 
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [phase, crashPoint]);
+  }, [GAME_ID, addCoins, autoCashoutEnabled, autoCashoutX, bet, crashPoint, phase, profileId, riskMode, setRecord]);
+
+  const applySetting = (patch: { riskMode?: keyof typeof RISK_CONFIG; autoCashoutEnabled?: boolean; autoCashoutX?: number }) => {
+    setGameSettings(GAME_ID, patch);
+    restart();
+  };
 
   const multiplierColor =
     multiplier < 2 ? 'text-neon-cyan' :
@@ -95,8 +122,53 @@ const CrashGame = () => {
     <GameContainer
       title="CRASH: TO THE MOON"
       score={coins}
-      highScore={records.crash?.score ? records.crash.score / 100 : undefined}
+      highScore={profileRecord?.score ? profileRecord.score / 100 : undefined}
       onRestart={restart}
+      profileLabel={`Профиль: ${riskMode.toUpperCase()} / ${autoCashoutEnabled ? `AUTO ${autoCashoutX}x` : 'MANUAL'}`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Риск-режим</p>
+            <div className="flex gap-2">
+              {(['safe', 'normal', 'insane'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => applySetting({ riskMode: mode })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                    riskMode === mode ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-mono text-muted-foreground">Авто-кэшаут</label>
+            <button
+              onClick={() => applySetting({ autoCashoutEnabled: !autoCashoutEnabled })}
+              className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                autoCashoutEnabled ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+              }`}
+            >
+              {autoCashoutEnabled ? 'Включен' : 'Выключен'}
+            </button>
+            <div className="flex gap-2">
+              {[1.5, 2, 3].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => applySetting({ autoCashoutX: value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    autoCashoutX === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {value}x
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     >
       <div
         className="w-full h-full flex flex-col items-center justify-center p-6 relative overflow-hidden"

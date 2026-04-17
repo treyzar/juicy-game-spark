@@ -4,6 +4,7 @@ import { GameContainer } from '@/components/GameContainer';
 import { useGameStore, InventoryItem } from '@/stores/useGameStore';
 import { Package, ArrowUp, Sparkles } from 'lucide-react';
 import { sfxClick, sfxWin, sfxUpgrade, sfxCrash, sfxTick, sfxCollect } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
 
 const ITEMS: Omit<InventoryItem, 'id'>[] = [
   { name: 'Обычный Осколок', rarity: 'common', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', value: 10 },
@@ -26,21 +27,37 @@ const RARITY_COLORS: Record<string, string> = {
   legendary: 'border-yellow-400',
 };
 
-const CASE_COST = 150;
+const CASE_TIER_CONFIG = {
+  budget: { cost: 80, weights: { common: 55, uncommon: 25, rare: 13, epic: 6, legendary: 1 } },
+  standard: { cost: 150, weights: { common: 40, uncommon: 25, rare: 20, epic: 10, legendary: 5 } },
+  premium: { cost: 300, weights: { common: 25, uncommon: 23, rare: 27, epic: 18, legendary: 7 } },
+} as const;
+
+const UPGRADE_PRESETS = {
+  safe: 55,
+  balanced: 35,
+  risky: 20,
+} as const;
 
 /** Neon Case Opener & Upgrader */
 const CaseOpener = () => {
+  const GAME_ID = 'cases';
   const [mode, setMode] = useState<'open' | 'upgrade' | 'inventory'>('open');
   const [reelItems, setReelItems] = useState<Omit<InventoryItem, 'id'>[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [wonItem, setWonItem] = useState<Omit<InventoryItem, 'id'> | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const controls = useAnimation();
-  const { coins, spendCoins, addItem, inventory, removeItem } = useGameStore();
+  const { coins, spendCoins, addItem, inventory, removeItem, gameSettings, setGameSettings, setRecord, getRecord } = useGameStore();
+  const caseTier = (gameSettings[GAME_ID]?.caseTier as keyof typeof CASE_TIER_CONFIG) ?? 'standard';
+  const upgradePreset = (gameSettings[GAME_ID]?.upgradePreset as keyof typeof UPGRADE_PRESETS) ?? 'balanced';
+  const caseCost = CASE_TIER_CONFIG[caseTier].cost;
+  const profileId = buildProfileId({ caseTier, upgradePreset });
+  const profileRecord = getRecord(GAME_ID, profileId);
 
-  const generateReel = useCallback(() => {
+  const generateReel = useCallback((tier: keyof typeof CASE_TIER_CONFIG) => {
     // Generate 40 items weighted by rarity
-    const weights: Record<string, number> = { common: 40, uncommon: 25, rare: 20, epic: 10, legendary: 5 };
+    const weights = CASE_TIER_CONFIG[tier].weights;
     const pool: Omit<InventoryItem, 'id'>[] = [];
     for (let i = 0; i < 40; i++) {
       const r = Math.random() * 100;
@@ -57,11 +74,11 @@ const CaseOpener = () => {
   }, []);
 
   const openCase = async () => {
-    if (!spendCoins(CASE_COST) || spinning) return;
+    if (!spendCoins(caseCost) || spinning) return;
     setWonItem(null);
     setShowConfetti(false);
 
-    const reel = generateReel();
+    const reel = generateReel(caseTier);
     const winnerIdx = 35;
     setReelItems(reel);
     setSpinning(true);
@@ -80,6 +97,7 @@ const CaseOpener = () => {
     const won = reel[winnerIdx];
     setWonItem(won);
     addItem({ ...won, id: crypto.randomUUID() });
+    setRecord(GAME_ID, profileId, won.value);
     setSpinning(false);
 
     if (won.rarity === 'epic' || won.rarity === 'legendary') {
@@ -93,7 +111,11 @@ const CaseOpener = () => {
 
   const [upgradeItem, setUpgradeItem] = useState<InventoryItem | null>(null);
   const [upgradeResult, setUpgradeResult] = useState<'pending' | 'success' | 'fail' | null>(null);
-  const [customChance, setCustomChance] = useState(30);
+  const [customChance, setCustomChance] = useState(UPGRADE_PRESETS[upgradePreset]);
+
+  useEffect(() => {
+    setCustomChance(UPGRADE_PRESETS[upgradePreset]);
+  }, [upgradePreset]);
 
   const tryUpgrade = () => {
     if (!upgradeItem) return;
@@ -107,6 +129,7 @@ const CaseOpener = () => {
         const candidates = ITEMS.filter(i => i.rarity === nextR);
         const won = candidates[Math.floor(Math.random() * candidates.length)];
         addItem({ ...won, id: crypto.randomUUID() });
+        setRecord(GAME_ID, profileId, won.value);
         sfxUpgrade();
         setUpgradeResult('success');
         setShowConfetti(true);
@@ -127,7 +150,49 @@ const CaseOpener = () => {
   };
 
   return (
-    <GameContainer title="NEON CASE OPENER" score={coins} onRestart={() => { setWonItem(null); setMode('open'); }}>
+    <GameContainer
+      title="NEON CASE OPENER"
+      score={coins}
+      highScore={profileRecord?.score}
+      onRestart={() => { setWonItem(null); setMode('open'); }}
+      profileLabel={`Профиль: ${caseTier.toUpperCase()} / ${upgradePreset.toUpperCase()}`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Тип кейса</p>
+            <div className="flex gap-2">
+              {(['budget', 'standard', 'premium'] as const).map((tier) => (
+                <button
+                  key={tier}
+                  onClick={() => setGameSettings(GAME_ID, { caseTier: tier })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                    caseTier === tier ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {tier}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Пресет улучшения</p>
+            <div className="flex gap-2">
+              {(['safe', 'balanced', 'risky'] as const).map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => setGameSettings(GAME_ID, { upgradePreset: preset })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                    upgradePreset === preset ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
+    >
       <div className="w-full h-full p-4 md:p-6 flex flex-col overflow-hidden relative">
         {/* Confetti */}
         {showConfetti && (
@@ -184,10 +249,10 @@ const CaseOpener = () => {
               </motion.div>
             )}
 
-            <button onClick={openCase} disabled={spinning || coins < CASE_COST}
+            <button onClick={openCase} disabled={spinning || coins < caseCost}
               className="btn-neon px-8 py-3 rounded-xl text-primary-foreground font-bold text-lg disabled:opacity-50">
               <Package className="inline w-5 h-5 mr-2" />
-              Открыть кейс ({CASE_COST} 💰)
+              Открыть кейс ({caseCost} 💰)
             </button>
           </div>
         )}

@@ -25,7 +25,7 @@ const GAMES: GameCardData[] = [
 /** Главная страница GameHub */
 const Index = () => {
   const navigate = useNavigate();
-  const { coins, records } = useGameStore();
+  const { coins, records, getBestRecord } = useGameStore();
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -81,9 +81,9 @@ const Index = () => {
               {game.title}
             </h2>
             <p className="text-sm text-muted-foreground">{game.description}</p>
-            {records[game.id] && (
+            {getBestRecord(game.id) && (
               <p className="mt-2 text-xs font-mono text-neon-yellow">
-                🏆 Лучший: {records[game.id].score}
+                🏆 Лучший: {getBestRecord(game.id)?.score}
               </p>
             )}
           </motion.button>

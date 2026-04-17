@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { sfxCollect, sfxCrash } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
 
 /** Направление змейки */
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -12,11 +13,15 @@ interface Point {
 }
 
 const GRID = 20;
-const INITIAL_SPEED = 120;
-const SPEED_INCREMENT = 5;
+const SPEED_PRESETS = {
+  easy: { initial: 150, increment: 4 },
+  normal: { initial: 120, increment: 5 },
+  hard: { initial: 95, increment: 7 },
+} as const;
 
 /** Neon Snake — Canvas-игра с эффектом свечения */
 const NeonSnake = () => {
+  const GAME_ID = 'snake';
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,7 +30,11 @@ const NeonSnake = () => {
   const foodRef = useRef<Point>({ x: 10, y: 10 });
   const loopRef = useRef<number>(0);
   const scoreRef = useRef(0);
-  const { records, setRecord } = useGameStore();
+  const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
+  const difficulty = (gameSettings[GAME_ID]?.difficulty as keyof typeof SPEED_PRESETS) ?? 'normal';
+  const wallMode = (gameSettings[GAME_ID]?.wallMode as 'wrap' | 'solid') ?? 'wrap';
+  const profileId = buildProfileId({ difficulty, wallMode });
+  const profileRecord = getRecord(GAME_ID, profileId);
 
   const spawnFood = useCallback((cols: number, rows: number) => {
     let p: Point;
@@ -69,7 +78,8 @@ const NeonSnake = () => {
     let lastTime = 0;
 
     const tick = (time: number) => {
-      const speed = Math.max(40, INITIAL_SPEED - scoreRef.current * SPEED_INCREMENT);
+      const speedPreset = SPEED_PRESETS[difficulty];
+      const speed = Math.max(35, speedPreset.initial - scoreRef.current * speedPreset.increment);
       if (time - lastTime < speed) {
         loopRef.current = requestAnimationFrame(tick);
         return;
@@ -86,15 +96,21 @@ const NeonSnake = () => {
         case 'RIGHT': head.x++; break;
       }
 
-      // Wrap around walls
-      if (head.x < 0) head.x = cols - 1;
-      if (head.x >= cols) head.x = 0;
-      if (head.y < 0) head.y = rows - 1;
-      if (head.y >= rows) head.y = 0;
+      if (wallMode === 'wrap') {
+        if (head.x < 0) head.x = cols - 1;
+        if (head.x >= cols) head.x = 0;
+        if (head.y < 0) head.y = rows - 1;
+        if (head.y >= rows) head.y = 0;
+      } else if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+        setRecord(GAME_ID, profileId, scoreRef.current);
+        sfxCrash();
+        setGameOver(true);
+        return;
+      }
 
       // Self collision only
       if (snake.some((s) => s.x === head.x && s.y === head.y)) {
-        setRecord('snake', scoreRef.current);
+        setRecord(GAME_ID, profileId, scoreRef.current);
         sfxCrash();
         setGameOver(true);
         return;
@@ -155,14 +171,59 @@ const NeonSnake = () => {
       cancelAnimationFrame(loopRef.current);
       window.removeEventListener('keydown', onKey);
     };
-  }, [gameOver]);
+  }, [difficulty, gameOver, profileId, setRecord, spawnFood, wallMode]);
+
+  const applySetting = (patch: { difficulty?: keyof typeof SPEED_PRESETS; wallMode?: 'wrap' | 'solid' }) => {
+    setGameSettings(GAME_ID, patch);
+    restart();
+  };
 
   return (
     <GameContainer
       title="NEON SNAKE"
       score={score}
-      highScore={records.snake?.score}
+      highScore={profileRecord?.score}
       onRestart={restart}
+      profileLabel={`Профиль: ${difficulty.toUpperCase()} / ${wallMode === 'wrap' ? 'WRAP' : 'WALLS'}`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Сложность</p>
+            <div className="flex gap-2">
+              {(['easy', 'normal', 'hard'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => applySetting({ difficulty: mode })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                    difficulty === mode ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Стены</p>
+            <div className="flex gap-2">
+              {([
+                { value: 'wrap', label: 'Телепорт' },
+                { value: 'solid', label: 'Твёрдые' },
+              ] as const).map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => applySetting({ wallMode: item.value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    wallMode === item.value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     >
       <div className="relative w-full h-full flex items-center justify-center">
         <canvas

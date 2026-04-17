@@ -4,6 +4,7 @@ import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { sfxTradeOpen, sfxProfit, sfxLoss, sfxWin } from '@/lib/sounds';
+import { buildProfileId } from '@/lib/gameProfiles';
 
 interface FloatingPnl {
   id: number;
@@ -11,8 +12,15 @@ interface FloatingPnl {
   x: number;
 }
 
+const VOLATILITY = {
+  low: 1.8,
+  normal: 3,
+  high: 4.8,
+} as const;
+
 /** Turbo Trader — симулятор скальпинга */
 const TurboTrader = () => {
+  const GAME_ID = 'trader';
   const [prices, setPrices] = useState<number[]>([100]);
   const [balance, setBalance] = useState(1000);
   const [position, setPosition] = useState<'long' | 'short' | null>(null);
@@ -25,7 +33,11 @@ const TurboTrader = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [gameActive, setGameActive] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { records, setRecord } = useGameStore();
+  const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
+  const sessionTime = Number(gameSettings[GAME_ID]?.sessionTime ?? 30);
+  const volatility = (gameSettings[GAME_ID]?.volatility as keyof typeof VOLATILITY) ?? 'normal';
+  const profileId = buildProfileId({ sessionTime, volatility });
+  const profileRecord = getRecord(GAME_ID, profileId);
 
   const currentPrice = prices[prices.length - 1];
 
@@ -37,10 +49,10 @@ const TurboTrader = () => {
     setTotalPnl(0);
     setTrades(0);
     setWins(0);
-    setTimeLeft(30);
+    setTimeLeft(sessionTime);
     setGameActive(true);
     setFloatingPnls([]);
-  }, []);
+  }, [sessionTime]);
 
   // Price generation
   useEffect(() => {
@@ -48,13 +60,13 @@ const TurboTrader = () => {
     const iv = setInterval(() => {
       setPrices(p => {
         const last = p[p.length - 1];
-        const change = (Math.random() - 0.48) * 3; // slight upward bias
+        const change = (Math.random() - 0.48) * VOLATILITY[volatility];
         const next = Math.max(10, last + change);
         return [...p.slice(-200), next];
       });
     }, 100);
     return () => clearInterval(iv);
-  }, [gameActive]);
+  }, [gameActive, volatility]);
 
   // Timer
   useEffect(() => {
@@ -82,9 +94,13 @@ const TurboTrader = () => {
   useEffect(() => {
     if (!gameActive && timeLeft === 0 && totalPnl !== 0) {
       sfxWin();
-      setRecord('trader', Math.max(0, totalPnl + 1000));
+      setRecord(GAME_ID, profileId, Math.max(0, totalPnl + 1000));
     }
-  }, [gameActive, timeLeft]);
+  }, [GAME_ID, gameActive, profileId, setRecord, timeLeft, totalPnl]);
+
+  useEffect(() => {
+    if (!gameActive) setTimeLeft(sessionTime);
+  }, [gameActive, sessionTime]);
 
   // Draw chart
   useEffect(() => {
@@ -172,11 +188,48 @@ const TurboTrader = () => {
     <GameContainer
       title="TURBO TRADER"
       score={balance}
-      highScore={records.trader?.score}
+      highScore={profileRecord?.score}
       onRestart={startGame}
+      profileLabel={`Профиль: ${sessionTime}s / ${volatility.toUpperCase()}`}
+      settingsContent={
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Длительность сессии</p>
+            <div className="flex gap-2">
+              {[30, 60, 90].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setGameSettings(GAME_ID, { sessionTime: value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                    sessionTime === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {value}s
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-mono text-muted-foreground mb-1">Волатильность</p>
+            <div className="flex gap-2">
+              {(['low', 'normal', 'high'] as const).map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setGameSettings(GAME_ID, { volatility: value })}
+                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                    volatility === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
+                  }`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     >
       <div className="w-full h-full flex flex-col p-4 md:p-6 relative">
-        {!gameActive && timeLeft === 30 ? (
+        {!gameActive && timeLeft === sessionTime ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center animate-fade-in">
               <p className="text-3xl font-bold mb-2">📈 Турбо Трейдер</p>

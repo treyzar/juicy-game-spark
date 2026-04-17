@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Settings2, Trophy } from 'lucide-react';
 
 interface GameContainerProps {
   title: string;
@@ -10,6 +10,8 @@ interface GameContainerProps {
   onRestart: () => void;
   children: ReactNode;
   accentColor?: string;
+  settingsContent?: ReactNode;
+  profileLabel?: string;
 }
 
 /** Универсальная обёртка для всех мини-игр */
@@ -20,8 +22,11 @@ export const GameContainer = ({
   onRestart,
   children,
   accentColor = 'neon-purple',
+  settingsContent,
+  profileLabel,
 }: GameContainerProps) => {
   const navigate = useNavigate();
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <motion.div
@@ -39,10 +44,24 @@ export const GameContainer = ({
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-lg md:text-xl font-bold font-mono">{title}</h1>
+          <div>
+            <h1 className="text-lg md:text-xl font-bold font-mono">{title}</h1>
+            {profileLabel && (
+              <p className="text-xs font-mono text-muted-foreground mt-0.5">{profileLabel}</p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
+          {settingsContent && (
+            <button
+              onClick={() => setShowSettings((v) => !v)}
+              className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              title="Настройки"
+            >
+              <Settings2 className="w-5 h-5" />
+            </button>
+          )}
           {highScore !== undefined && (
             <div className="flex items-center gap-1.5 text-neon-yellow">
               <Trophy className="w-4 h-4" />
@@ -60,6 +79,11 @@ export const GameContainer = ({
           </button>
         </div>
       </div>
+      {settingsContent && showSettings && (
+        <div className="glass-strong p-3 md:p-4 mb-4 rounded-xl">
+          {settingsContent}
+        </div>
+      )}
 
       {/* Game Area */}
       <div className="flex-1 glass rounded-xl overflow-hidden flex items-center justify-center">
