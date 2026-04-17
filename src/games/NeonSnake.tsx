@@ -86,9 +86,14 @@ const NeonSnake = () => {
         case 'RIGHT': head.x++; break;
       }
 
-      // Wall / self collision
-      if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
-          snake.some((s) => s.x === head.x && s.y === head.y)) {
+      // Wrap around walls
+      if (head.x < 0) head.x = cols - 1;
+      if (head.x >= cols) head.x = 0;
+      if (head.y < 0) head.y = rows - 1;
+      if (head.y >= rows) head.y = 0;
+
+      // Self collision only
+      if (snake.some((s) => s.x === head.x && s.y === head.y)) {
         setRecord('snake', scoreRef.current);
         sfxCrash();
         setGameOver(true);

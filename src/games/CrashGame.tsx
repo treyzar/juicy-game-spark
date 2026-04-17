@@ -133,7 +133,7 @@ const CrashGame = () => {
             animate={{ scale: 1 }}
             className="text-3xl font-bold text-destructive mt-4"
           >
-            💥 CRASHED at {crashPoint.toFixed(2)}x
+            💥 КРАШ на {crashPoint.toFixed(2)}x
           </motion.p>
         )}
         {phase === 'cashed' && (
@@ -142,7 +142,7 @@ const CrashGame = () => {
             animate={{ scale: 1 }}
             className="text-3xl font-bold text-neon-green mt-4"
           >
-            ✅ +{Math.floor(bet * multiplier)} coins!
+            ✅ +{Math.floor(bet * multiplier)} монет!
           </motion.p>
         )}
 
@@ -151,7 +151,7 @@ const CrashGame = () => {
           {phase === 'betting' && (
             <>
               <div className="flex items-center gap-2 w-full">
-                <label className="text-sm text-muted-foreground font-mono">BET:</label>
+                <label className="text-sm text-muted-foreground font-mono">СТАВКА:</label>
                 <input
                   type="number"
                   value={bet}
@@ -169,7 +169,7 @@ const CrashGame = () => {
               </div>
               <button onClick={startRound}
                 className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold text-lg">
-                🚀 LAUNCH
+                🚀 ЗАПУСК
               </button>
             </>
           )}
@@ -177,13 +177,13 @@ const CrashGame = () => {
             <button onClick={cashOut}
               className="w-full py-4 rounded-xl font-bold text-xl transition-all"
               style={{ background: 'var(--gradient-success)', color: 'white' }}>
-              CASH OUT — {Math.floor(bet * multiplier)} 💰
+              ЗАБРАТЬ — {Math.floor(bet * multiplier)} 💰
             </button>
           )}
           {(phase === 'crashed' || phase === 'cashed') && (
             <button onClick={restart}
               className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold">
-              New Round
+              Новый раунд
             </button>
           )}
         </div>

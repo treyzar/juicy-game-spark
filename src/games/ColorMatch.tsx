@@ -5,12 +5,12 @@ import { useGameStore } from '@/stores/useGameStore';
 import { sfxCollect, sfxWrong, sfxWin, sfxCountdown } from '@/lib/sounds';
 
 const COLORS = [
-  { name: 'RED', hsl: 'hsl(0 80% 55%)' },
-  { name: 'BLUE', hsl: 'hsl(220 90% 55%)' },
-  { name: 'GREEN', hsl: 'hsl(145 80% 45%)' },
-  { name: 'YELLOW', hsl: 'hsl(50 90% 50%)' },
-  { name: 'PINK', hsl: 'hsl(330 90% 60%)' },
-  { name: 'CYAN', hsl: 'hsl(190 90% 50%)' },
+  { name: 'КРАСНЫЙ', hsl: 'hsl(0 80% 55%)' },
+  { name: 'СИНИЙ', hsl: 'hsl(220 90% 55%)' },
+  { name: 'ЗЕЛЁНЫЙ', hsl: 'hsl(145 80% 45%)' },
+  { name: 'ЖЁЛТЫЙ', hsl: 'hsl(50 90% 50%)' },
+  { name: 'РОЗОВЫЙ', hsl: 'hsl(330 90% 60%)' },
+  { name: 'ГОЛУБОЙ', hsl: 'hsl(190 90% 50%)' },
 ];
 
 /** Color Match — Stroop-эффект, игра на реакцию */
@@ -101,15 +101,15 @@ const ColorMatch = () => {
             <p className="text-2xl font-bold mb-2">Выбери ЦВЕТ текста</p>
             <p className="text-muted-foreground mb-6">Не читай слово — смотри на цвет!</p>
             <button onClick={startGame} className="btn-neon px-8 py-3 rounded-xl text-primary-foreground text-lg">
-              Start
+              Старт
             </button>
           </div>
         ) : !gameActive ? (
           <div className="text-center animate-scale-in">
-            <p className="text-4xl font-bold text-gradient-primary mb-2">TIME'S UP!</p>
-            <p className="text-muted-foreground font-mono text-xl">Score: {score}</p>
+            <p className="text-4xl font-bold text-gradient-primary mb-2">ВРЕМЯ ВЫШЛО!</p>
+            <p className="text-muted-foreground font-mono text-xl">Счёт: {score}</p>
             <button onClick={startGame} className="mt-4 btn-neon px-6 py-2 rounded-lg text-primary-foreground">
-              Play Again
+              Играть снова
             </button>
           </div>
         ) : (

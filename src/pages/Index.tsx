@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/stores/useGameStore';
 import { Gamepad2, Coins, Trophy } from 'lucide-react';
+import { EasterEgg67 } from '@/components/EasterEgg67';
 
 interface GameCardData {
   id: string;
@@ -13,12 +14,12 @@ interface GameCardData {
 }
 
 const GAMES: GameCardData[] = [
-  { id: 'snake', title: 'Neon Snake', description: 'Classic snake with neon glow', path: '/snake', gradient: 'linear-gradient(135deg, #a855f7, #6366f1)', icon: '🐍' },
-  { id: 'colormatch', title: 'Color Match', description: 'Stroop effect reaction game', path: '/colormatch', gradient: 'linear-gradient(135deg, #ec4899, #f97316)', icon: '🎨' },
-  { id: 'memory', title: 'Memory Cards', description: '16 gradient cards to match', path: '/memory', gradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)', icon: '🃏' },
-  { id: 'crash', title: 'CRASH: To the Moon', description: 'Cash out before crash!', path: '/crash', gradient: 'linear-gradient(135deg, #f97316, #ef4444)', icon: '🚀' },
-  { id: 'cases', title: 'Neon Case Opener', description: 'Open cases, upgrade items', path: '/cases', gradient: 'linear-gradient(135deg, #eab308, #a855f7)', icon: '📦' },
-  { id: 'trader', title: 'Turbo Trader', description: 'Scalp the neon market', path: '/trader', gradient: 'linear-gradient(135deg, #22c55e, #06b6d4)', icon: '📈' },
+  { id: 'snake', title: 'Змейка', description: 'Классическая змейка с неоновым свечением', path: '/snake', gradient: 'linear-gradient(135deg, #a855f7, #6366f1)', icon: '🐍' },
+  { id: 'colormatch', title: 'Угадай Цвет', description: 'Игра на реакцию с эффектом Струпа', path: '/colormatch', gradient: 'linear-gradient(135deg, #ec4899, #f97316)', icon: '🎨' },
+  { id: 'memory', title: 'Карты Памяти', description: '16 карт с градиентами для поиска пар', path: '/memory', gradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)', icon: '🃏' },
+  { id: 'crash', title: 'РАКЕТКА', description: 'Забери выигрыш до краша!', path: '/crash', gradient: 'linear-gradient(135deg, #f97316, #ef4444)', icon: '🚀' },
+  { id: 'cases', title: 'КЕЙСБАТЛ', description: 'Открывай кейсы, улучшай предметы', path: '/cases', gradient: 'linear-gradient(135deg, #eab308, #a855f7)', icon: '📦' },
+  { id: 'trader', title: 'Турбо Трейдер', description: 'Торгуй на неоновом рынке', path: '/trader', gradient: 'linear-gradient(135deg, #22c55e, #06b6d4)', icon: '📈' },
 ];
 
 /** Главная страница GameHub */
@@ -28,6 +29,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8">
+      <EasterEgg67 />
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -41,7 +43,7 @@ const Index = () => {
             <span className="text-gradient-secondary">Hub</span>
           </h1>
         </div>
-        <p className="text-muted-foreground text-sm md:text-base">Micro-Adventures Portal</p>
+        <p className="text-muted-foreground text-sm md:text-base">Портал Микро-Приключений</p>
 
         {/* Stats bar */}
         <div className="mt-4 inline-flex gap-6 glass-strong px-6 py-3 rounded-full">
@@ -52,7 +54,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-neon-cyan" />
             <span className="font-mono text-sm text-muted-foreground">
-              {Object.keys(records).length} records
+              {Object.keys(records).length} рекордов
             </span>
           </div>
         </div>
@@ -81,7 +83,7 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">{game.description}</p>
             {records[game.id] && (
               <p className="mt-2 text-xs font-mono text-neon-yellow">
-                🏆 Best: {records[game.id].score}
+                🏆 Лучший: {records[game.id].score}
               </p>
             )}
           </motion.button>

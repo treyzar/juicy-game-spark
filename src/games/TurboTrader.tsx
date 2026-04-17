@@ -179,21 +179,21 @@ const TurboTrader = () => {
         {!gameActive && timeLeft === 30 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center animate-fade-in">
-              <p className="text-3xl font-bold mb-2">📈 Turbo Trader</p>
-              <p className="text-muted-foreground mb-6">Buy or Sell — predict the price!</p>
+              <p className="text-3xl font-bold mb-2">📈 Турбо Трейдер</p>
+              <p className="text-muted-foreground mb-6">Покупай или продавай — предскажи цену!</p>
               <button onClick={startGame} className="btn-neon px-8 py-3 rounded-xl text-primary-foreground text-lg">
-                Start Trading
+                Начать торговлю
               </button>
             </div>
           </div>
         ) : !gameActive ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center animate-scale-in">
-              <p className="text-4xl font-bold text-gradient-primary mb-2">SESSION OVER</p>
+              <p className="text-4xl font-bold text-gradient-primary mb-2">СЕССИЯ ОКОНЧЕНА</p>
               <p className="font-mono text-xl mb-1">P&L: <span className={totalPnl >= 0 ? 'text-neon-green' : 'text-destructive'}>{totalPnl >= 0 ? '+' : ''}{totalPnl}</span></p>
-              <p className="text-muted-foreground">Win rate: {trades > 0 ? ((wins / trades) * 100).toFixed(0) : 0}% ({wins}/{trades})</p>
+              <p className="text-muted-foreground">Процент побед: {trades > 0 ? ((wins / trades) * 100).toFixed(0) : 0}% ({wins}/{trades})</p>
               <button onClick={startGame} className="mt-4 btn-neon px-6 py-2 rounded-lg text-primary-foreground">
-                Trade Again
+                Торговать снова
               </button>
             </div>
           </div>
@@ -244,12 +244,12 @@ const TurboTrader = () => {
                   <button onClick={() => openPosition('long')}
                     className="flex-1 py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                     style={{ background: 'var(--gradient-success)', color: 'white' }}>
-                    <TrendingUp className="w-5 h-5" /> BUY
+                    <TrendingUp className="w-5 h-5" /> КУПИТЬ
                   </button>
                   <button onClick={() => openPosition('short')}
                     className="flex-1 py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                     style={{ background: 'var(--gradient-danger)', color: 'white' }}>
-                    <TrendingDown className="w-5 h-5" /> SELL
+                    <TrendingDown className="w-5 h-5" /> ПРОДАТЬ
                   </button>
                 </>
               ) : (
@@ -257,7 +257,7 @@ const TurboTrader = () => {
                   className={`flex-1 py-3 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] ${
                     pnl >= 0 ? 'bg-neon-green/20 text-neon-green border border-neon-green/40' : 'bg-destructive/20 text-destructive border border-destructive/40'
                   }`}>
-                  CLOSE ({pnl >= 0 ? '+' : ''}{pnl})
+                  ЗАКРЫТЬ ({pnl >= 0 ? '+' : ''}{pnl})
                 </button>
               )}
             </div>

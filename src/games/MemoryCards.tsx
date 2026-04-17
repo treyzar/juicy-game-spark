@@ -28,20 +28,20 @@ const MemoryCards = () => {
   const [moves, setMoves] = useState(0);
   const [selected, setSelected] = useState<number[]>([]);
   const [locked, setLocked] = useState(false);
+  const [gridSize, setGridSize] = useState(4);
   const { records, setRecord } = useGameStore();
 
   const initGame = useCallback(() => {
-    const pairs = [...Array(8)].flatMap((_, i) => [
-      { id: i * 2, gradientIdx: i, flipped: false, matched: false },
-      { id: i * 2 + 1, gradientIdx: i, flipped: false, matched: false },
+    const pairCount = (gridSize * gridSize) / 2;
+    const pairs = [...Array(pairCount)].flatMap((_, i) => [
+      { id: i * 2, gradientIdx: i % GRADIENTS.length, flipped: false, matched: false },
+      { id: i * 2 + 1, gradientIdx: i % GRADIENTS.length, flipped: false, matched: false },
     ]);
     setCards(pairs.sort(() => Math.random() - 0.5));
     setMoves(0);
     setSelected([]);
     setLocked(false);
-  }, []);
-
-  useEffect(() => { initGame(); }, [initGame]);
+  }, [gridSize]);
 
   const handleFlip = (idx: number) => {
     if (locked || cards[idx].flipped || cards[idx].matched) return;
@@ -94,12 +94,34 @@ const MemoryCards = () => {
       onRestart={initGame}
     >
       <div className="p-4 md:p-6 w-full max-w-lg mx-auto">
-        {allMatched && (
-          <div className="text-center mb-4 animate-scale-in">
-            <p className="text-2xl font-bold text-gradient-primary">🎉 Complete in {moves} moves!</p>
+        {cards.length === 0 ? (
+          <div className="text-center animate-fade-in">
+            <p className="text-2xl font-bold mb-4">Карты Памяти</p>
+            <div className="flex gap-2 justify-center mb-6">
+              {[2, 4, 6].map(size => (
+                <button
+                  key={size}
+                  onClick={() => setGridSize(size)}
+                  className={`px-4 py-2 rounded-lg font-mono text-sm transition-all ${
+                    gridSize === size ? 'btn-neon text-primary-foreground' : 'bg-muted/50 hover:bg-muted'
+                  }`}
+                >
+                  {size}x{size}
+                </button>
+              ))}
+            </div>
+            <button onClick={initGame} className="btn-neon px-8 py-3 rounded-xl text-primary-foreground text-lg">
+              Старт
+            </button>
           </div>
-        )}
-        <div className="grid grid-cols-4 gap-2 md:gap-3">
+        ) : (
+          <>
+            {allMatched && (
+              <div className="text-center mb-4 animate-scale-in">
+                <p className="text-2xl font-bold text-gradient-primary">🎉 Завершено за {moves} ходов!</p>
+              </div>
+            )}
+            <div className={`grid gap-2 md:gap-3`} style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
           {cards.map((card, idx) => (
             <motion.div
               key={card.id}
@@ -133,6 +155,8 @@ const MemoryCards = () => {
             </motion.div>
           ))}
         </div>
+          </>
+        )}
       </div>
     </GameContainer>
   );

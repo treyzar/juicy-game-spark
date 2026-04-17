@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Admin from "./pages/Admin.tsx";
 
 const NeonSnake = lazy(() => import("./games/NeonSnake"));
 const ColorMatch = lazy(() => import("./games/ColorMatch"));
@@ -18,7 +19,7 @@ const queryClient = new QueryClient();
 
 const Loading = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <div className="text-2xl font-mono text-primary animate-pulse-neon">Loading...</div>
+    <div className="text-2xl font-mono text-primary animate-pulse-neon">Загрузка...</div>
   </div>
 );
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/crash" element={<CrashGame />} />
             <Route path="/cases" element={<CaseOpener />} />
             <Route path="/trader" element={<TurboTrader />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
