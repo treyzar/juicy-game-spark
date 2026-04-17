@@ -123,12 +123,20 @@ export const GameContainer = ({
             <div className="mb-4">
               {settingsContent}
             </div>
-            <button
-              onClick={handleStart}
-              className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold"
-            >
-              Играть
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <button
+                onClick={() => navigate('/')}
+                className="w-full bg-muted/70 hover:bg-muted py-3 rounded-xl font-bold transition-colors"
+              >
+                Назад
+              </button>
+              <button
+                onClick={handleStart}
+                className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold"
+              >
+                Играть
+              </button>
+            </div>
           </div>
         </div>
       )}

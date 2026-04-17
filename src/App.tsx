@@ -7,6 +7,7 @@ import { lazy, Suspense } from "react";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Admin from "./pages/Admin.tsx";
+import { LanSessionBridge } from "./components/LanSessionBridge";
 
 const NeonSnake = lazy(() => import("./games/NeonSnake"));
 const ColorMatch = lazy(() => import("./games/ColorMatch"));
@@ -29,6 +30,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <LanSessionBridge />
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Index />} />
