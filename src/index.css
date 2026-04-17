@@ -116,6 +116,14 @@
   .screen-shake {
     animation: shake 0.15s ease-in-out;
   }
+
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  }
+
+  .pt-safe {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.25rem);
+  }
 }
 
 @keyframes shake {

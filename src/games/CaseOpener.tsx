@@ -161,12 +161,12 @@ const CaseOpener = () => {
         <div className="space-y-3">
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Тип кейса</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {(['budget', 'standard', 'premium'] as const).map((tier) => (
                 <button
                   key={tier}
                   onClick={() => setGameSettings(GAME_ID, { caseTier: tier })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs uppercase transition-colors min-h-11 ${
                     caseTier === tier ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -177,12 +177,12 @@ const CaseOpener = () => {
           </div>
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Пресет улучшения</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {(['safe', 'balanced', 'risky'] as const).map((preset) => (
                 <button
                   key={preset}
                   onClick={() => setGameSettings(GAME_ID, { upgradePreset: preset })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs uppercase transition-colors min-h-11 ${
                     upgradePreset === preset ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -194,7 +194,7 @@ const CaseOpener = () => {
         </div>
       }
     >
-      <div className="w-full h-full p-4 md:p-6 flex flex-col overflow-hidden relative">
+      <div className="w-full h-full p-3 md:p-6 flex flex-col overflow-hidden relative">
         {/* Confetti */}
         {showConfetti && (
           <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
@@ -212,10 +212,10 @@ const CaseOpener = () => {
         )}
 
         {/* Mode tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 flex-wrap">
           {(['open', 'upgrade', 'inventory'] as const).map(m => (
             <button key={m} onClick={() => setMode(m)}
-              className={`px-4 py-2 rounded-lg font-mono text-sm font-bold transition-all ${
+              className={`px-4 py-2.5 min-h-11 rounded-lg font-mono text-xs sm:text-sm font-bold transition-all ${
                 mode === m ? 'btn-neon text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               }`}>
               {m === 'open' ? '📦 Открыть' : m === 'upgrade' ? '⬆️ Улучшить' : '🎒 Инвентарь'}
@@ -251,7 +251,7 @@ const CaseOpener = () => {
             )}
 
             <button onClick={openCase} disabled={spinning || coins < caseCost}
-              className="btn-neon px-8 py-3 rounded-xl text-primary-foreground font-bold text-lg disabled:opacity-50">
+              className="btn-neon px-6 sm:px-8 py-3 min-h-12 rounded-xl text-primary-foreground font-bold text-base sm:text-lg disabled:opacity-50">
               <Package className="inline w-5 h-5 mr-2" />
               Открыть кейс ({caseCost} 💰)
             </button>
@@ -262,7 +262,7 @@ const CaseOpener = () => {
         {mode === 'upgrade' && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <p className="text-muted-foreground text-sm">Выбери предмет из инвентаря для улучшения</p>
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-40 overflow-y-auto w-full">
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 max-h-40 overflow-y-auto w-full">
               {inventory.map(item => (
                 <motion.button key={item.id} whileTap={{ scale: 0.9 }}
                   onClick={() => { setUpgradeItem(item); setUpgradeResult(null); }}

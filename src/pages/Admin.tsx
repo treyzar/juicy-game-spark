@@ -88,16 +88,16 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 pt-safe pb-safe">
       <div className="max-w-5xl mx-auto">
-        <div className="glass-strong rounded-2xl p-4 md:p-6 mb-4 flex items-center justify-between">
+        <div className="glass-strong rounded-2xl p-4 md:p-6 mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold font-mono">LAN Admin</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Сервер: <span className="font-mono">{serverUrl}</span>
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" onClick={loadSessions}>
               <RefreshCw className="w-4 h-4 mr-2" />
               Обновить
@@ -110,7 +110,7 @@ const Admin = () => {
         </div>
         <div className="glass rounded-2xl p-4 md:p-6 mb-4">
           <p className="text-sm font-mono mb-2">Секретный шифр администратора</p>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               type="password"
               placeholder="Введи секрет"

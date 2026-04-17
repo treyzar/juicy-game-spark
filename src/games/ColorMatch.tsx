@@ -4,6 +4,7 @@ import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { sfxCollect, sfxWrong, sfxWin, sfxCountdown } from '@/lib/sounds';
 import { buildProfileId } from '@/lib/gameProfiles';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const COLORS = [
   { name: 'КРАСНЫЙ', hsl: 'hsl(0 80% 55%)' },
@@ -28,8 +29,10 @@ const ColorMatch = () => {
   const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
   const roundTime = Number(gameSettings[GAME_ID]?.roundTime ?? 30);
   const optionsCount = Number(gameSettings[GAME_ID]?.optionsCount ?? 3);
+  const isMobile = useIsMobile();
   const profileId = buildProfileId({ roundTime, optionsCount });
   const profileRecord = getRecord(GAME_ID, profileId);
+  const optionColumns = isMobile && optionsCount >= 4 ? 2 : Math.min(optionsCount, 3);
 
   const generateRound = useCallback(() => {
     const shuffled = [...COLORS].sort(() => Math.random() - 0.5);
@@ -119,12 +122,12 @@ const ColorMatch = () => {
         <div className="space-y-3">
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Длительность раунда</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[30, 45, 60].map((value) => (
                 <button
                   key={value}
                   onClick={() => applySetting({ roundTime: value })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     roundTime === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -135,12 +138,12 @@ const ColorMatch = () => {
           </div>
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Количество вариантов</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[3, 4].map((value) => (
                 <button
                   key={value}
                   onClick={() => applySetting({ optionsCount: value })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     optionsCount === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -152,7 +155,7 @@ const ColorMatch = () => {
         </div>
       }
     >
-      <div className="flex flex-col items-center justify-center gap-8 p-6 w-full max-w-md mx-auto">
+      <div className="flex flex-col items-center justify-center gap-6 md:gap-8 p-4 md:p-6 w-full max-w-md mx-auto">
         {!gameActive && timeLeft === roundTime ? (
           <div className="text-center animate-fade-in">
             <p className="text-2xl font-bold mb-2">Выбери ЦВЕТ текста</p>
@@ -179,7 +182,7 @@ const ColorMatch = () => {
               key={displayText.name + textColor.name}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`text-5xl md:text-7xl font-black font-mono select-none ${
+              className={`text-4xl sm:text-5xl md:text-7xl font-black font-mono select-none text-center break-words ${
                 feedback === 'correct' ? 'scale-110' : feedback === 'wrong' ? 'screen-shake' : ''
               }`}
               style={{ color: textColor.hsl }}
@@ -187,13 +190,13 @@ const ColorMatch = () => {
               {displayText.name}
             </motion.div>
 
-            <div className="grid grid-cols-3 gap-3 w-full">
+            <div className="grid gap-2.5 md:gap-3 w-full" style={{ gridTemplateColumns: `repeat(${optionColumns}, minmax(0, 1fr))` }}>
               {options.map((opt) => (
                 <motion.button
                   key={opt.name}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleChoice(opt)}
-                  className="glass p-4 rounded-xl font-bold transition-all hover:scale-105"
+                  className="glass p-3 md:p-4 min-h-12 rounded-xl font-bold transition-all hover:scale-105 text-sm sm:text-base"
                   style={{ backgroundColor: opt.hsl, color: 'white' }}
                 >
                   {opt.name}

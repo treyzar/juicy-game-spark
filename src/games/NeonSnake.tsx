@@ -3,6 +3,7 @@ import { GameContainer } from '@/components/GameContainer';
 import { useGameStore } from '@/stores/useGameStore';
 import { sfxCollect, sfxCrash } from '@/lib/sounds';
 import { buildProfileId } from '@/lib/gameProfiles';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /** Направление змейки */
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -30,7 +31,9 @@ const NeonSnake = () => {
   const foodRef = useRef<Point>({ x: 10, y: 10 });
   const loopRef = useRef<number>(0);
   const scoreRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const { gameSettings, getRecord, setRecord, setGameSettings } = useGameStore();
+  const isMobile = useIsMobile();
   const difficulty = (gameSettings[GAME_ID]?.difficulty as keyof typeof SPEED_PRESETS) ?? 'normal';
   const wallMode = (gameSettings[GAME_ID]?.wallMode as 'wrap' | 'solid') ?? 'wrap';
   const profileId = buildProfileId({ difficulty, wallMode });
@@ -52,6 +55,11 @@ const NeonSnake = () => {
     setGameOver(false);
   }, []);
 
+  const setDirection = useCallback((nd: Direction) => {
+    const opp: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+    if (opp[nd] !== dirRef.current) dirRef.current = nd;
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -70,8 +78,7 @@ const NeonSnake = () => {
       };
       const nd = map[e.key];
       if (!nd) return;
-      const opp: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
-      if (opp[nd] !== dirRef.current) dirRef.current = nd;
+      setDirection(nd);
     };
     window.addEventListener('keydown', onKey);
 
@@ -180,7 +187,7 @@ const NeonSnake = () => {
       cancelAnimationFrame(loopRef.current);
       window.removeEventListener('keydown', onKey);
     };
-  }, [difficulty, gameOver, profileId, setRecord, spawnFood, wallMode]);
+  }, [difficulty, gameOver, profileId, setDirection, setRecord, spawnFood, wallMode]);
 
   const applySetting = (patch: { difficulty?: keyof typeof SPEED_PRESETS; wallMode?: 'wrap' | 'solid' }) => {
     setGameSettings(GAME_ID, patch);
@@ -203,7 +210,7 @@ const NeonSnake = () => {
                 <button
                   key={mode}
                   onClick={() => applySetting({ difficulty: mode })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs uppercase transition-colors min-h-11 ${
                     difficulty === mode ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -214,7 +221,7 @@ const NeonSnake = () => {
           </div>
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Стены</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {([
                 { value: 'wrap', label: 'Телепорт' },
                 { value: 'solid', label: 'Твёрдые' },
@@ -222,7 +229,7 @@ const NeonSnake = () => {
                 <button
                   key={item.value}
                   onClick={() => applySetting({ wallMode: item.value })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     wallMode === item.value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -234,13 +241,59 @@ const NeonSnake = () => {
         </div>
       }
     >
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div
+        className="relative w-full h-full flex items-center justify-center"
+        onTouchStart={(e) => {
+          const t = e.changedTouches[0];
+          touchStartRef.current = { x: t.clientX, y: t.clientY };
+        }}
+        onTouchEnd={(e) => {
+          if (!touchStartRef.current) return;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - touchStartRef.current.x;
+          const dy = t.clientY - touchStartRef.current.y;
+          const absX = Math.abs(dx);
+          const absY = Math.abs(dy);
+          if (Math.max(absX, absY) < 24) return;
+          if (absX > absY) setDirection(dx > 0 ? 'RIGHT' : 'LEFT');
+          else setDirection(dy > 0 ? 'DOWN' : 'UP');
+          touchStartRef.current = null;
+        }}
+      >
         <canvas
           ref={canvasRef}
           width={400}
           height={400}
-          className="rounded-lg max-w-full max-h-full"
+          className="rounded-lg w-full max-w-[400px] aspect-square max-h-full"
         />
+        {isMobile && !gameOver && (
+          <div className="absolute bottom-3 right-3 grid grid-cols-3 gap-1.5 bg-card/60 backdrop-blur-md p-2 rounded-xl">
+            <button
+              onClick={() => setDirection('UP')}
+              className="col-start-2 w-11 h-11 rounded-lg bg-muted/70 hover:bg-muted font-mono text-lg"
+            >
+              ↑
+            </button>
+            <button
+              onClick={() => setDirection('LEFT')}
+              className="col-start-1 w-11 h-11 rounded-lg bg-muted/70 hover:bg-muted font-mono text-lg"
+            >
+              ←
+            </button>
+            <button
+              onClick={() => setDirection('DOWN')}
+              className="col-start-2 w-11 h-11 rounded-lg bg-muted/70 hover:bg-muted font-mono text-lg"
+            >
+              ↓
+            </button>
+            <button
+              onClick={() => setDirection('RIGHT')}
+              className="col-start-3 row-start-2 w-11 h-11 rounded-lg bg-muted/70 hover:bg-muted font-mono text-lg"
+            >
+              →
+            </button>
+          </div>
+        )}
         {gameOver && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
             <div className="text-center animate-scale-in">

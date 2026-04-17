@@ -107,7 +107,7 @@ const MemoryCards = () => {
         <div className="space-y-3">
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Размер поля</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[2, 4, 6].map((size) => (
                 <button
                   key={size}
@@ -116,7 +116,7 @@ const MemoryCards = () => {
                     setGameSettings(GAME_ID, { gridSize: size });
                     setCards([]);
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     gridSize === size ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -127,7 +127,7 @@ const MemoryCards = () => {
           </div>
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Пауза после ошибки</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[600, 800, 1000].map((delay) => (
                 <button
                   key={delay}
@@ -135,7 +135,7 @@ const MemoryCards = () => {
                     setGameSettings(GAME_ID, { flipBackDelayMs: delay });
                     setCards([]);
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     flipBackDelayMs === delay ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -147,11 +147,11 @@ const MemoryCards = () => {
         </div>
       }
     >
-      <div className="p-4 md:p-6 w-full max-w-lg mx-auto">
+      <div className="p-3 md:p-6 w-full max-w-lg mx-auto">
         {cards.length === 0 ? (
           <div className="text-center animate-fade-in">
             <p className="text-2xl font-bold mb-4">Карты Памяти</p>
-            <div className="flex gap-2 justify-center mb-6">
+            <div className="flex gap-2 justify-center mb-6 flex-wrap">
               {[2, 4, 6].map(size => (
                 <button
                   key={size}
@@ -159,7 +159,7 @@ const MemoryCards = () => {
                     setGridSize(size);
                     setGameSettings(GAME_ID, { gridSize: size });
                   }}
-                  className={`px-4 py-2 rounded-lg font-mono text-sm transition-all ${
+                  className={`px-4 py-2 rounded-lg font-mono text-sm transition-all min-h-11 ${
                     gridSize === size ? 'btn-neon text-primary-foreground' : 'bg-muted/50 hover:bg-muted'
                   }`}
                 >
@@ -178,7 +178,7 @@ const MemoryCards = () => {
                 <p className="text-2xl font-bold text-gradient-primary">🎉 Завершено за {moves} ходов!</p>
               </div>
             )}
-            <div className={`grid gap-2 md:gap-3`} style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
+            <div className={`grid gap-1.5 sm:gap-2 md:gap-3`} style={{ gridTemplateColumns: `repeat(${gridSize}, minmax(0, 1fr))` }}>
           {cards.map((card, idx) => (
             <motion.div
               key={card.id}
@@ -197,7 +197,7 @@ const MemoryCards = () => {
                   className="absolute inset-0 rounded-xl glass border-2 border-border/30 flex items-center justify-center"
                   style={{ backfaceVisibility: 'hidden' }}
                 >
-                  <span className="text-2xl text-muted-foreground">?</span>
+                  <span className="text-lg sm:text-2xl text-muted-foreground">?</span>
                 </div>
                 {/* Front */}
                 <div

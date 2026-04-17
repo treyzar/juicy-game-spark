@@ -129,12 +129,12 @@ const CrashGame = () => {
         <div className="space-y-3">
           <div>
             <p className="text-xs font-mono text-muted-foreground mb-1">Риск-режим</p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {(['safe', 'normal', 'insane'] as const).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => applySetting({ riskMode: mode })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs uppercase transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs uppercase transition-colors min-h-11 ${
                     riskMode === mode ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -143,11 +143,11 @@ const CrashGame = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <label className="text-xs font-mono text-muted-foreground">Авто-кэшаут</label>
             <button
               onClick={() => applySetting({ autoCashoutEnabled: !autoCashoutEnabled })}
-              className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+              className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                 autoCashoutEnabled ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
               }`}
             >
@@ -158,7 +158,7 @@ const CrashGame = () => {
                 <button
                   key={value}
                   onClick={() => applySetting({ autoCashoutX: value })}
-                  className={`px-3 py-1.5 rounded-lg font-mono text-xs transition-colors ${
+                  className={`px-3 py-2 rounded-lg font-mono text-xs transition-colors min-h-11 ${
                     autoCashoutX === value ? 'btn-neon text-primary-foreground' : 'bg-muted/60 hover:bg-muted'
                   }`}
                 >
@@ -171,7 +171,7 @@ const CrashGame = () => {
       }
     >
       <div
-        className="w-full h-full flex flex-col items-center justify-center p-6 relative overflow-hidden"
+        className="w-full h-full flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden"
         style={{
           transform: shakeIntensity > 0
             ? `translate(${(Math.random() - 0.5) * shakeIntensity}px, ${(Math.random() - 0.5) * shakeIntensity}px)`
@@ -180,7 +180,7 @@ const CrashGame = () => {
       >
         {/* Multiplier display */}
         <motion.div
-          className={`text-6xl md:text-8xl font-black font-mono ${multiplierColor} transition-colors`}
+          className={`text-5xl sm:text-6xl md:text-8xl font-black font-mono ${multiplierColor} transition-colors`}
           animate={{ scale: phase === 'flying' ? [1, 1.02, 1] : 1 }}
           transition={{ repeat: Infinity, duration: 0.5 }}
         >
@@ -203,7 +203,7 @@ const CrashGame = () => {
           <motion.p
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="text-3xl font-bold text-destructive mt-4"
+            className="text-2xl sm:text-3xl font-bold text-destructive mt-4 text-center"
           >
             💥 КРАШ на {crashPoint.toFixed(2)}x
           </motion.p>
@@ -212,14 +212,14 @@ const CrashGame = () => {
           <motion.p
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="text-3xl font-bold text-neon-green mt-4"
+            className="text-2xl sm:text-3xl font-bold text-neon-green mt-4 text-center"
           >
             ✅ +{Math.floor(bet * multiplier)} монет!
           </motion.p>
         )}
 
         {/* Controls */}
-        <div className="mt-8 glass-strong p-4 rounded-xl flex flex-col items-center gap-3 w-full max-w-xs">
+        <div className="mt-6 md:mt-8 glass-strong p-4 rounded-xl flex flex-col items-center gap-3 w-full max-w-xs">
           {phase === 'betting' && (
             <>
               <div className="flex items-center gap-2 w-full">
@@ -234,20 +234,20 @@ const CrashGame = () => {
               <div className="flex gap-2 w-full">
                 {[50, 100, 250, 500].map(v => (
                   <button key={v} onClick={() => setBet(v)}
-                    className="flex-1 text-xs font-mono bg-muted/80 hover:bg-muted rounded-lg py-1.5 transition-colors">
+                    className="flex-1 text-xs font-mono bg-muted/80 hover:bg-muted rounded-lg py-2.5 min-h-11 transition-colors">
                     {v}
                   </button>
                 ))}
               </div>
               <button onClick={startRound}
-                className="w-full btn-neon py-3 rounded-xl text-primary-foreground font-bold text-lg">
+                className="w-full btn-neon py-3 min-h-12 rounded-xl text-primary-foreground font-bold text-base sm:text-lg">
                 🚀 ЗАПУСК
               </button>
             </>
           )}
           {phase === 'flying' && (
             <button onClick={cashOut}
-              className="w-full py-4 rounded-xl font-bold text-xl transition-all"
+              className="w-full py-3 sm:py-4 min-h-12 rounded-xl font-bold text-lg sm:text-xl transition-all"
               style={{ background: 'var(--gradient-success)', color: 'white' }}>
               ЗАБРАТЬ — {Math.floor(bet * multiplier)} 💰
             </button>

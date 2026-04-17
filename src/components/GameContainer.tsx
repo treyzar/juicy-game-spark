@@ -48,30 +48,30 @@ export const GameContainer = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen flex flex-col p-4 md:p-6"
+      className="min-h-screen flex flex-col p-3 md:p-6 pb-safe"
     >
       {/* Header */}
-      <div className="glass-strong p-3 md:p-4 mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="glass-strong p-3 md:p-4 mb-3 md:mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
           <button
             onClick={() => navigate('/')}
-            className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+            className="p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
-            <h1 className="text-lg md:text-xl font-bold font-mono">{title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-base md:text-xl font-bold font-mono truncate">{title}</h1>
             {profileLabel && (
-              <p className="text-xs font-mono text-muted-foreground mt-0.5">{profileLabel}</p>
+              <p className="text-[11px] md:text-xs font-mono text-muted-foreground mt-0.5 truncate">{profileLabel}</p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 flex-wrap md:flex-nowrap">
           {settingsContent && (
             <button
               onClick={() => setShowSettings((v) => !v)}
-              className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+              className="p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors disabled:opacity-50"
               title="Настройки"
               disabled={!isConfigured}
             >
@@ -89,7 +89,7 @@ export const GameContainer = ({
           </div>
           <button
             onClick={onRestart}
-            className="p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+            className="p-2.5 rounded-lg bg-muted/50 hover:bg-muted transition-colors disabled:opacity-50"
             disabled={!isConfigured}
           >
             <RotateCcw className="w-5 h-5" />
@@ -106,7 +106,7 @@ export const GameContainer = ({
       )}
 
       {/* Game Area */}
-      <div className="flex-1 glass rounded-xl overflow-hidden flex items-center justify-center">
+      <div className="flex-1 min-h-0 glass rounded-xl overflow-hidden flex items-center justify-center">
         {isConfigured ? (
           children
         ) : (
@@ -117,8 +117,8 @@ export const GameContainer = ({
       </div>
 
       {settingsContent && !isConfigured && (
-        <div className="fixed inset-0 z-50 bg-background/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-xl glass-strong rounded-2xl p-4 md:p-6">
+        <div className="fixed inset-0 z-50 bg-background/85 backdrop-blur-sm flex items-end md:items-center justify-center p-3 md:p-4">
+          <div className="w-full max-w-xl glass-strong rounded-2xl p-4 md:p-6 max-h-[calc(100dvh-1.5rem)] overflow-y-auto pb-safe">
             <h2 className="text-xl font-bold font-mono mb-2">Перед стартом</h2>
             <p className="text-sm text-muted-foreground mb-4">
               Настрой игру под себя, затем нажми «Играть».

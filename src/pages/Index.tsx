@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/stores/useGameStore';
-import { Gamepad2, Coins, Trophy } from 'lucide-react';
+import { Gamepad2, Coins, Trophy, QrCode } from 'lucide-react';
 import { EasterEgg67 } from '@/components/EasterEgg67';
 
 interface GameCardData {
@@ -46,7 +46,7 @@ const Index = () => {
         <p className="text-muted-foreground text-sm md:text-base">Портал Микро-Приключений</p>
 
         {/* Stats bar */}
-        <div className="mt-4 inline-flex gap-6 glass-strong px-6 py-3 rounded-full">
+        <div className="mt-4 inline-flex flex-wrap justify-center gap-4 md:gap-6 glass-strong px-4 md:px-6 py-3 rounded-2xl">
           <div className="flex items-center gap-2">
             <Coins className="w-4 h-4 text-neon-yellow" />
             <span className="font-mono font-bold">{coins}</span>
@@ -57,6 +57,16 @@ const Index = () => {
               {Object.keys(records).length} рекордов
             </span>
           </div>
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={() => navigate('/qr')}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/60 hover:bg-muted transition-colors font-mono text-sm"
+          >
+            <QrCode className="w-4 h-4 text-neon-cyan" />
+            QR для телефонов
+          </button>
         </div>
       </motion.header>
 
