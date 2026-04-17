@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   fetchLanSessions,
+  getAdminSecret,
   getLanServerUrl,
   LanSessionInfo,
+  saveAdminSecret,
   sendTopupCommand,
 } from "@/lib/lanSession";
 
@@ -17,17 +19,30 @@ const Admin = () => {
   const [error, setError] = useState<string | null>(null);
   const [amountBySession, setAmountBySession] = useState<Record<string, string>>({});
   const [busySession, setBusySession] = useState<string | null>(null);
+  const [adminSecret, setAdminSecret] = useState(() => getAdminSecret());
   const serverUrl = useMemo(() => getLanServerUrl(), []);
 
   const loadSessions = async () => {
+    if (!adminSecret.trim()) {
+      setSessions([]);
+      setLoading(false);
+      setError("Введи секретный шифр для доступа к админ-панели.");
+      return;
+    }
+
     try {
       setError(null);
-      const response = await fetchLanSessions();
+      const response = await fetchLanSessions(adminSecret);
       setSessions(response.sessions);
-    } catch {
-      setError(
-        "LAN-сервер недоступен. Запусти `npm run lan:server` и проверь VITE_LAN_SERVER_URL."
-      );
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      if (message.toLowerCase().includes("unauthorized")) {
+        setError("Неверный секретный шифр.");
+      } else {
+        setError(
+          "Сервер недоступен. Проверь URL, запуск `npm run lan:server` и доступ к порту 8787."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -49,7 +64,7 @@ const Admin = () => {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, []);
+  }, [adminSecret]);
 
   const topupSession = async (sessionId: string) => {
     const amount = Number(amountBySession[sessionId] || "0");
@@ -57,11 +72,16 @@ const Admin = () => {
 
     try {
       setBusySession(sessionId);
-      await sendTopupCommand(sessionId, Math.floor(amount));
+      await sendTopupCommand(sessionId, Math.floor(amount), adminSecret);
       setAmountBySession((s) => ({ ...s, [sessionId]: "" }));
       await loadSessions();
-    } catch {
-      setError("Не удалось отправить пополнение для выбранной сессии.");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      if (message.toLowerCase().includes("unauthorized")) {
+        setError("Неверный секретный шифр.");
+      } else {
+        setError("Не удалось отправить пополнение для выбранной сессии.");
+      }
     } finally {
       setBusySession(null);
     }
@@ -85,6 +105,26 @@ const Admin = () => {
             <Button variant="outline" onClick={() => navigate("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Назад
+            </Button>
+          </div>
+        </div>
+        <div className="glass rounded-2xl p-4 md:p-6 mb-4">
+          <p className="text-sm font-mono mb-2">Секретный шифр администратора</p>
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              placeholder="Введи секрет"
+              value={adminSecret}
+              onChange={(e) => setAdminSecret(e.target.value)}
+            />
+            <Button
+              onClick={() => {
+                saveAdminSecret(adminSecret);
+                setLoading(true);
+                loadSessions();
+              }}
+            >
+              Применить
             </Button>
           </div>
         </div>
@@ -143,7 +183,7 @@ const Admin = () => {
                     />
                     <Button
                       onClick={() => topupSession(session.sessionId)}
-                      disabled={busySession === session.sessionId}
+                      disabled={busySession === session.sessionId || !adminSecret.trim()}
                     >
                       Пополнить
                     </Button>
@@ -159,4 +199,3 @@ const Admin = () => {
 };
 
 export default Admin;
-

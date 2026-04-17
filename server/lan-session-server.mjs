@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 
 const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 8787);
+const ADMIN_SECRET = (process.env.ADMIN_SECRET || "").trim();
 const ACTIVE_TTL_MS = 15_000;
 const DROP_TTL_MS = 60_000;
 
@@ -16,10 +17,16 @@ const json = (res, code, body) => {
   res.writeHead(code, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, X-Admin-Secret",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   });
   res.end(payload);
+};
+
+const isAuthorized = (req) => {
+  if (!ADMIN_SECRET) return true;
+  const provided = String(req.headers["x-admin-secret"] || "");
+  return provided === ADMIN_SECRET;
 };
 
 const parseBody = (req) =>
@@ -66,6 +73,10 @@ createServer(async (req, res) => {
   }
 
   if (method === "GET" && url === "/sessions") {
+    if (!isAuthorized(req)) {
+      return json(res, 401, { ok: false, error: "Unauthorized" });
+    }
+
     const now = Date.now();
     const active = Array.from(sessions.values())
       .filter((s) => now - s.lastSeen <= ACTIVE_TTL_MS)
@@ -107,6 +118,10 @@ createServer(async (req, res) => {
   }
 
   if (method === "POST" && url === "/topup") {
+    if (!isAuthorized(req)) {
+      return json(res, 401, { ok: false, error: "Unauthorized" });
+    }
+
     try {
       const body = await parseBody(req);
       const sessionId = String(body.sessionId || "");
@@ -138,5 +153,9 @@ createServer(async (req, res) => {
   return json(res, 404, { ok: false, error: "Not found" });
 }).listen(PORT, HOST, () => {
   console.log(`[lan-session-server] listening on http://${HOST}:${PORT}`);
+  if (ADMIN_SECRET) {
+    console.log("[lan-session-server] admin access protected with ADMIN_SECRET");
+  } else {
+    console.log("[lan-session-server] WARNING: ADMIN_SECRET is empty; admin endpoints are open");
+  }
 });
-
