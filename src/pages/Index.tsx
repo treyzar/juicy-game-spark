@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '@/stores/useGameStore';
-import { Gamepad2, Coins, Trophy, Shield } from 'lucide-react';
+import { Gamepad2, Coins, Trophy } from 'lucide-react';
 import { EasterEgg67 } from '@/components/EasterEgg67';
 
 interface GameCardData {
@@ -57,15 +57,6 @@ const Index = () => {
               {Object.keys(records).length} рекордов
             </span>
           </div>
-        </div>
-        <div className="mt-3">
-          <button
-            onClick={() => navigate('/admin')}
-            className="inline-flex items-center gap-2 bg-muted/50 hover:bg-muted px-4 py-2 rounded-lg text-sm font-mono transition-colors"
-          >
-            <Shield className="w-4 h-4" />
-            LAN Admin
-          </button>
         </div>
       </motion.header>
 
