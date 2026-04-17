@@ -1,3 +1,5 @@
+import { generateId } from '@/lib/id';
+
 export interface LanCommand {
   id: string;
   type: 'topup';
@@ -26,7 +28,7 @@ export const getLanServerUrl = () =>
 export const getLanSessionId = () => {
   const existing = sessionStorage.getItem(SESSION_ID_KEY);
   if (existing) return existing;
-  const id = crypto.randomUUID();
+  const id = generateId();
   sessionStorage.setItem(SESSION_ID_KEY, id);
   return id;
 };

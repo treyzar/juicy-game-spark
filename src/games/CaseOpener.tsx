@@ -5,6 +5,7 @@ import { useGameStore, InventoryItem } from '@/stores/useGameStore';
 import { Package, ArrowUp, Sparkles } from 'lucide-react';
 import { sfxClick, sfxWin, sfxUpgrade, sfxCrash, sfxTick, sfxCollect } from '@/lib/sounds';
 import { buildProfileId } from '@/lib/gameProfiles';
+import { generateId } from '@/lib/id';
 
 const ITEMS: Omit<InventoryItem, 'id'>[] = [
   { name: 'Обычный Осколок', rarity: 'common', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', value: 10 },
@@ -96,7 +97,7 @@ const CaseOpener = () => {
 
     const won = reel[winnerIdx];
     setWonItem(won);
-    addItem({ ...won, id: crypto.randomUUID() });
+    addItem({ ...won, id: generateId() });
     setRecord(GAME_ID, profileId, won.value);
     setSpinning(false);
 
@@ -128,7 +129,7 @@ const CaseOpener = () => {
         const nextR = rarities[Math.min(rarities.indexOf(upgradeItem.rarity) + 1, rarities.length - 1)];
         const candidates = ITEMS.filter(i => i.rarity === nextR);
         const won = candidates[Math.floor(Math.random() * candidates.length)];
-        addItem({ ...won, id: crypto.randomUUID() });
+        addItem({ ...won, id: generateId() });
         setRecord(GAME_ID, profileId, won.value);
         sfxUpgrade();
         setUpgradeResult('success');
