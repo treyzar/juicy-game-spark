@@ -25,6 +25,7 @@ const NeonSnake = () => {
   const GAME_ID = 'snake';
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [runSeed, setRunSeed] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dirRef = useRef<Direction>('RIGHT');
   const snakeRef = useRef<Point[]>([{ x: 5, y: 5 }]);
@@ -53,6 +54,7 @@ const NeonSnake = () => {
     scoreRef.current = 0;
     setScore(0);
     setGameOver(false);
+    setRunSeed((s) => s + 1);
   }, []);
 
   const setDirection = useCallback((nd: Direction) => {
@@ -191,7 +193,7 @@ const NeonSnake = () => {
       cancelAnimationFrame(loopRef.current);
       window.removeEventListener('keydown', onKey);
     };
-  }, [difficulty, gameOver, profileId, setDirection, setRecord, spawnFood, wallMode]);
+  }, [difficulty, gameOver, profileId, runSeed, setDirection, setRecord, spawnFood, wallMode]);
 
   const applySetting = (patch: { difficulty?: keyof typeof SPEED_PRESETS; wallMode?: 'wrap' | 'solid' }) => {
     setGameSettings(GAME_ID, patch);
