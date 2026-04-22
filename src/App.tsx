@@ -16,6 +16,7 @@ const CrashGame = lazy(() => import("./games/CrashGame"));
 const CaseOpener = lazy(() => import("./games/CaseOpener"));
 const TurboTrader = lazy(() => import("./games/TurboTrader"));
 const QrShare = lazy(() => import("./pages/QrShare"));
+const TopUp = lazy(() => import("./pages/TopUp"));
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/trader" element={<TurboTrader />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/qr" element={<QrShare />} />
+            <Route path="/topup" element={<TopUp />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

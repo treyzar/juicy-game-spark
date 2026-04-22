@@ -61,6 +61,8 @@ const NeonSnake = () => {
   }, []);
 
   useEffect(() => {
+    if (gameOver) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
@@ -75,9 +77,11 @@ const NeonSnake = () => {
       const map: Record<string, Direction> = {
         ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT',
         w: 'UP', s: 'DOWN', a: 'LEFT', d: 'RIGHT',
+        W: 'UP', S: 'DOWN', A: 'LEFT', D: 'RIGHT',
       };
       const nd = map[e.key];
       if (!nd) return;
+      e.preventDefault();
       setDirection(nd);
     };
     window.addEventListener('keydown', onKey);
